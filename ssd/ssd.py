@@ -32,7 +32,7 @@ class SSD(ISSD):
         with open(self.__ssd_name, "r") as f:
             for line in f:
                 m = pattern.match(line)
-                self.__data[m["lba"]] = int(m["val"])
+                self.__data[m["lba"]] = int(m["val"], 16)
 
     def __del__(self) -> None:
         with open(self.__ssd_name, "w") as f:
