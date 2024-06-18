@@ -4,7 +4,7 @@ from unittest.mock import patch
 from shell import Shell
 
 
-class TestShell(TestCase):
+class TestCustomShell(TestCase):
     def test_write(self):
         pass
 

@@ -1,4 +1,4 @@
-class Shell:
+class CustomShell:
     def write(self,
               lba: int,
               val: int) -> None:
