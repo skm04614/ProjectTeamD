@@ -1,3 +1,4 @@
+import os.path
 import io
 import os
 from unittest import TestCase, skip
@@ -6,10 +7,8 @@ from contextlib import redirect_stdout
 
 from custom_shell.custom_shell import CustomShell
 
-
 def _lba_to_sample_val(lba: int) -> int:
     return lba << 4
-
 
 def _print_lba_to_sample_val(lba: int) -> None:
     print(_lba_to_sample_val(lba))
@@ -17,7 +16,10 @@ def _print_lba_to_sample_val(lba: int) -> None:
 
 class TestCustomShell(TestCase):
     def setUp(self):
+        super().setUp()
+        self.cshell = CustomShell()
         self.__cshell = CustomShell()
+
 
     def get_hex_values(self, file_path):
         with open(file_path, 'r') as file:
@@ -29,8 +31,25 @@ class TestCustomShell(TestCase):
             hex_values.append(hex_value)
         return hex_values
 
+
+    @skip
     def test_write(self):
-        pass
+        self.cshell.write(10, 0x1234ABCD)
+        self.cshell.read(10)
+
+        with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
+            ret = f.read().strip()
+
+        self.assertEqual(0x1234ABCD, int(ret, 16))
+
+    @skip
+    def test_exception_when_invalid_argument_for_write(self):
+        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234ABCDD], [10, 'abcd'], [None, 0x1234ABCD],
+                    [10, None]]
+
+        for lba, val in test_arg:
+            with self.assertRaises(ValueError):
+                self.cshell.write(lba, val)
 
     @skip
     def test_read(self):

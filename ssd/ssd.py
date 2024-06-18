@@ -7,8 +7,24 @@ from collections import OrderedDict
 
 
 class ISSD(ABC):
-    def __init__(self) -> None:
-        pass
+    def __init__(self,
+                 nand_path: str = os.path.dirname(__file__) + "/nand.txt",
+                 result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
+        self._data: OrderedDict[int, int] = OrderedDict()
+        self._nand_path: str = nand_path
+        self._prepare_nand_path()
+        self._prepare_nand_data()
+
+        self._result_path: str = result_path
+        self._prepare_result_path()
+
+    @property
+    def nand_path(self) -> str:
+        return self._nand_path
+
+    @property
+    def result_path(self) -> str:
+        return self._result_path
 
     @abstractmethod
     def write(self,
@@ -20,54 +36,59 @@ class ISSD(ABC):
     def read(self,
              lba: int) -> None:
         pass
+
+    def _update_nand(self) -> None:
+        with open(self._nand_path, "w") as f:
+            for lba, val in self._data.items():
+                f.write(f"[{lba}] 0x{val:08x}\n")
+
+    def _prepare_nand_data(self) -> None:
+        pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
+        with open(self._nand_path, "r") as f:
+            for line in f:
+                m = pattern.match(line)
+                self._data[int(m["lba"])] = int(m["val"], 16)
+
+    def _prepare_nand_path(self):
+        if os.path.exists(self._nand_path):
+            return
+
+        with open(self._nand_path, "w") as f:
+            for lba in range(0, 100):
+                f.write(f"[{lba}] 0x{0:08x}\n")
+
+    def _prepare_result_path(self) -> None:
+        with open(self._result_path, "w") as f:
+            f.write("")
 
 
 class SSD(ISSD):
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
-        super().__init__()
-        self.__nand_path: str = nand_path
-        self.__result_path: str = result_path
-
-        self.__data: OrderedDict[int, int] = OrderedDict()
-        pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
-        with open(self.__nand_path, "r") as f:
-            for line in f:
-                m = pattern.match(line)
-                self.__data[int(m["lba"])] = int(m["val"], 16)
+        super().__init__(nand_path, result_path)
 
     @overrides
     def write(self,
               lba: int,
               val: int) -> None:
-        # TODO: implement logic (valid lba range [0, 99], val [0x0, 0xFFFFFFFF])
+        if not 0 <= lba < 100:
+            raise ValueError("LBA is out of range [0, 100).")
 
-        self.__update_nand()
-        pass
+        if not 0 <= val <= 0xFFFFFFFF:
+            raise ValueError("target value is out of range [0, 0xFFFFFFFF].")
+
+        self._data[lba] = val
+        self._update_nand()
 
     @overrides
     def read(self,
              lba: int) -> None:
-        with open(self.__result_path, "w") as f:
-            f.write(f'0x{self.__data[lba]:08x}')
+        if not 0 <= lba < 100:
+            raise ValueError("LBA is out of range [0, 100).")
 
-    def __update_nand(self) -> None:
-        with open(self.__nand_path, "w") as f:
-            for lba, val in self.__data.items():
-                f.write(f"[{lba}] 0x{val:08x}\n")
-
-    @property
-    def data(self) -> OrderedDict[int, int]:
-        return self.__data
-
-    @property
-    def nand_path(self) -> str:
-        return self.__nand_path
-
-    @property
-    def result_path(self) -> str:
-        return self.__result_path
+        with open(self._result_path, "w") as f:
+            f.write(f'0x{self._data[lba]:08x}')
 
 
 def ssd(*args):
