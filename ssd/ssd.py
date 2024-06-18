@@ -1,10 +1,30 @@
+from abc import ABC, abstractmethod
+from overrides import overrides
+
 import re
 import sys
 
 
-class SSD:
+class ISSD(ABC):
+    def __init__(self) -> None:
+        pass
+
+    @abstractmethod
+    def write(self,
+              lba: int,
+              val: int) -> None:
+        pass
+
+    @abstractmethod
+    def read(self,
+             lba: int) -> int:
+        pass
+
+
+class SSD(ISSD):
     def __init__(self,
                  ssd_name: str = "./nand.txt") -> None:
+        super().__init__()
         self.__ssd_name: str = ssd_name
 
         self.__data: dict[int, int] = {}
@@ -12,19 +32,21 @@ class SSD:
         with open(self.__ssd_name, "r") as f:
             for line in f:
                 m = pattern.match(line)
-                self.__data[m["lba"]] = int(m["val"])
+                self.__data[m["lba"]] = int(m["val"], 16)
 
     def __del__(self) -> None:
         with open(self.__ssd_name, "w") as f:
             for lba, val in self.__data.items():
                 f.write(f"[{lba}] {hex(val)}\n")
 
+    @overrides
     def write(self,
               lba: int,
               val: int) -> None:
         # TODO: implement logic (valid lba range [0, 99], val [0x0, 0xFFFFFFFF])
         pass
 
+    @overrides
     def read(self,
              lba: int) -> int:
         # TODO: implement logic (valid lba range [0, 99])
