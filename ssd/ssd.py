@@ -3,6 +3,7 @@ import sys
 import os.path
 from abc import ABC, abstractmethod
 from overrides import overrides
+from collections import OrderedDict
 
 
 class ISSD(ABC):
@@ -27,23 +28,20 @@ class SSD(ISSD):
         super().__init__()
         self.__ssd_name: str = ssd_name
 
-        self.__data: dict[int, int] = {}
+        self.__data: OrderedDict[int, int] = OrderedDict()
         pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
         with open(self.__ssd_name, "r") as f:
             for line in f:
                 m = pattern.match(line)
-                self.__data[m["lba"]] = int(m["val"], 16)
-
-    def __del__(self) -> None:
-        with open(self.__ssd_name, "w") as f:
-            for lba, val in self.__data.items():
-                f.write(f"[{lba}] {hex(val)}\n")
+                self.__data[int(m["lba"])] = int(m["val"], 16)
 
     @overrides
     def write(self,
               lba: int,
               val: int) -> None:
         # TODO: implement logic (valid lba range [0, 99], val [0x0, 0xFFFFFFFF])
+
+        self.__update_nand()
         pass
 
     @overrides
@@ -51,6 +49,11 @@ class SSD(ISSD):
              lba: int) -> int:
         # TODO: implement logic (valid lba range [0, 99])
         pass
+
+    def __update_nand(self) -> None:
+        with open(self.__ssd_name, "w") as f:
+            for lba, val in self.__data.items():
+                f.write(f"[{lba}] 0x{val:08x}\n")
 
 
 def ssd(*args):
