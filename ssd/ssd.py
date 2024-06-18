@@ -25,8 +25,10 @@ class ISSD(ABC):
 class SSD(ISSD):
     def __init__(self,
                  ssd_name: str = os.path.dirname(__file__) + "/nand.txt") -> None:
+                 result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
         super().__init__()
         self.__ssd_name: str = ssd_name
+        self.result_path: str = result_path
 
         self.__data: OrderedDict[int, int] = OrderedDict()
         pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
@@ -47,13 +49,16 @@ class SSD(ISSD):
     @overrides
     def read(self,
              lba: int) -> int:
-        # TODO: implement logic (valid lba range [0, 99])
-        pass
+        with open(self.result_path, "w") as f:
+            f.write(hex(self.__data[lba]))
 
     def __update_nand(self) -> None:
         with open(self.__ssd_name, "w") as f:
             for lba, val in self.__data.items():
                 f.write(f"[{lba}] 0x{val:08x}\n")
+
+    def get_data(self) -> OrderedDict[int, int]:
+        return self.__data
 
 
 def ssd(*args):
