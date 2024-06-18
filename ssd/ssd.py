@@ -18,19 +18,21 @@ class ISSD(ABC):
 
     @abstractmethod
     def read(self,
-             lba: int) -> int:
+             lba: int) -> None:
         pass
 
 
 class SSD(ISSD):
     def __init__(self,
-                 ssd_name: str = os.path.dirname(__file__) + "/nand.txt") -> None:
+                 nand_path: str = os.path.dirname(__file__) + "/nand.txt",
+                 result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
         super().__init__()
-        self.__ssd_name: str = ssd_name
+        self.__nand_path: str = nand_path
+        self.__result_path: str = result_path
 
         self.__data: OrderedDict[int, int] = OrderedDict()
         pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
-        with open(self.__ssd_name, "r") as f:
+        with open(self.__nand_path, "r") as f:
             for line in f:
                 m = pattern.match(line)
                 self.__data[int(m["lba"])] = int(m["val"], 16)
@@ -46,14 +48,26 @@ class SSD(ISSD):
 
     @overrides
     def read(self,
-             lba: int) -> int:
-        # TODO: implement logic (valid lba range [0, 99])
-        pass
+             lba: int) -> None:
+        with open(self.__result_path, "w") as f:
+            f.write(f'0x{self.__data[lba]:08x}')
 
     def __update_nand(self) -> None:
-        with open(self.__ssd_name, "w") as f:
+        with open(self.__nand_path, "w") as f:
             for lba, val in self.__data.items():
                 f.write(f"[{lba}] 0x{val:08x}\n")
+
+    @property
+    def data(self) -> OrderedDict[int, int]:
+        return self.__data
+
+    @property
+    def nand_path(self) -> str:
+        return self.__nand_path
+
+    @property
+    def result_path(self) -> str:
+        return self.__result_path
 
 
 def ssd(*args):
@@ -66,9 +80,7 @@ def ssd(*args):
 
     lba = int(args[2])
     if op == 'R':
-        with open(os.path.dirname(__file__) + "/result.txt", "w") as f:
-            f.write(f"{my_ssd.read(lba)}")
-            return
+        my_ssd.read(lba)
 
     if op == 'W':
         val = int(args[3])
