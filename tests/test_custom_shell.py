@@ -18,7 +18,7 @@ class TestCustomShell(TestCase):
     def test_exception_when_invalid_argument_for_write(self):
         cshell = CustomShell()
 
-        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234], [10, 0x1234ABCDD], [10, 'abcd']]
+        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234], [10, 0x1234ABCDD], [10, 'abcd'], [None, 0x1234ABCD], [10, None]]
 
         for lba, val in test_arg:
             with self.assertRaises(ValueError):
