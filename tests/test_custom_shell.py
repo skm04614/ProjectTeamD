@@ -12,17 +12,15 @@ def _lba_to_sample_val(lba: int) -> int:
 def _print_lba_to_sample_val(lba: int) -> None:
     print(_lba_to_sample_val(lba))
 
-
 class TestCustomShell(TestCase):
     def setUp(self):
         super().setUp()
-        self.cshell = CustomShell()
         self.__cshell = CustomShell()
 
     @skip
     def test_write(self):
-        self.cshell.write(10, 0x1234ABCD)
-        self.cshell.read(10)
+        self.__cshell.write(10, 0x1234ABCD)
+        self.__cshell.read(10)
 
         with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
             ret = f.read().strip()
@@ -36,7 +34,7 @@ class TestCustomShell(TestCase):
 
         for lba, val in test_arg:
             with self.assertRaises(ValueError):
-                self.cshell.write(lba, val)
+                self.__cshell.write(lba, val)
 
     @skip
     def test_read(self):
@@ -46,7 +44,7 @@ class TestCustomShell(TestCase):
             with (self.subTest(f"lba: {lba}, ssd data read test!"),
                   io.StringIO() as buf, redirect_stdout(buf)):
                 ssd.read.return_value = data
-                CustomShell().read(lba)
+                self.__cshell.read(lba)
                 self.assertEqual(buf.getvalue().strip(), data)
 
     @skip
@@ -54,7 +52,7 @@ class TestCustomShell(TestCase):
         test_lbas = [-1, 101, '10', '', ' ', None]
         for lba in test_lbas:
             with self.assertRaises(ValueError):
-                CustomShell().read(lba)
+                self.__cshell.read(lba)
 
     def test_exit(self):
         pass
