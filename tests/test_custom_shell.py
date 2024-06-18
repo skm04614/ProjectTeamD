@@ -22,6 +22,13 @@ class TestCustomShell(TestCase):
                 CustomShell().read(lba)
                 self.assertEqual(buf.getvalue().strip(), data)
 
+    @skip
+    def test_exception_when_invalid_argument_for_read(self):
+        test_lbas = [-1, 101, '10', '', ' ', None]
+        for lba in test_lbas:
+            with self.assertRaises(ValueError):
+                CustomShell().read(lba)
+
     def test_exit(self):
         pass
 
