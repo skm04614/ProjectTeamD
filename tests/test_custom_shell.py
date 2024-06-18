@@ -1,4 +1,5 @@
 import io
+import os
 from unittest import TestCase, skip
 from unittest.mock import Mock, patch
 from contextlib import redirect_stdout
@@ -68,20 +69,20 @@ class TestCustomShell(TestCase):
 
     @skip
     def test_full_write_invalid_value(self):
-        invalid_value = 0x1234FFFF1
+        invalid_value = 0x1234FFFFF
         with self.assertRaises(ValueError):
-            self.customShell.full_write(invalid_value)
+            self.__cshell.full_write(invalid_value)
 
-    @skip
     def test_full_write(self):
         valid_value = 0x1234FFFF
         nand_path = os.path.dirname(__file__) + "/../ssd/nand.txt"
-        self.customShell.full_write(valid_value)
+        self.__cshell.full_write(valid_value)
 
         hex_values = self.get_hex_values(nand_path)
         for index, line in enumerate(hex_values):
             with self.subTest(f'lba:{index} value:{line}'):
-                self.assertEqual(valid_value, int(line))
+                formatted_value = hex(valid_value).upper().replace('0X', '0x')
+                self.assertEqual(formatted_value, line)
 
     @patch.object(CustomShell, "read", side_effect=_print_lba_to_sample_val)
     def test_full_read(self, mk_cshell):
