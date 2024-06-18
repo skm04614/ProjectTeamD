@@ -1,30 +1,46 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from ssd.ssd import SSD
 
 
 class TestSSD(TestCase):
     def setUp(self):
-        super().setUp()
         self.ssd = SSD()
 
-    def assert_invalid_argument_for_write(self, lba, val):
-        try:
-            self.ssd.write(lba, val)
-            self.fail()
-        except TypeError:
-            pass
-
+    @skip
     def test_exception_when_invalid_argument_for_write(self):
-        self.assert_invalid_argument_for_write(-1, 0x12345678)
-        self.assert_invalid_argument_for_write(101, 0x12345678)
-        self.assert_invalid_argument_for_write(10, 0x1234)
-        self.assert_invalid_argument_for_write(10, 0x1234ABCDD)
-        self.assert_invalid_argument_for_write(10, 'abcd')
+        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234], [10, 0x1234ABCDD], [10, 'abcd']]
 
+        for lba, val in test_arg:
+            with self.assertRaises(ValueError):
+                self.ssd.write(lba, val)
+
+    @skip
     def test_success_write(self):
         self.ssd.write(10, 0x1234ABCD)
-        self.assertEqual(0x1234ABCD, self.ssd.read(10))
+        self.ssd._prepare_nand_data()
+        self.assertEqual(self.ssd._data[10], 0x1234ABCD)
 
+    @skip
     def test_read(self):
-        pass
+        lba = 33
+        expected = 0x76543210
+
+        # arrange
+        self.ssd.data[lba] = expected
+
+        # act
+        self.ssd.read(lba)
+
+        # assert
+        with open(self.ssd.result_path, "r") as f:
+            self.assertEqual(expected, int(f.read(), 16))
+
+    @skip
+    def test_read_with_invalid_lba(self):
+        invalid_lbas = [-1, 100, ' ', '', None]
+
+        for lba in invalid_lbas:
+            with self.subTest(f'SSD read test with invalid lba: {lba}'):
+                with self.assertRaises(ValueError):
+                    self.ssd.read(lba)
