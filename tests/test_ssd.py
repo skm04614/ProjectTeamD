@@ -10,15 +10,14 @@ class TestSSD(TestCase):
     def test_read(self):
         lba = 33
         expected = 0x76543210
-        result_path = './result.txt'
 
         # arrange
-        sut = SSD(result_path=result_path)
-        sut.get_data()[lba] = expected
+        sut = SSD()
+        sut.data[lba] = expected
 
         # act
         sut.read(lba)
 
         # assert
-        with open(result_path, "r") as f:
+        with open(sut.result_path, "r") as f:
             self.assertEqual(expected, int(f.read(), 16))

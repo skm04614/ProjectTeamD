@@ -57,8 +57,17 @@ class SSD(ISSD):
             for lba, val in self.__data.items():
                 f.write(f"[{lba}] 0x{val:08x}\n")
 
-    def get_data(self) -> OrderedDict[int, int]:
+    @property
+    def data(self) -> OrderedDict[int, int]:
         return self.__data
+
+    @property
+    def nand_path(self) -> str:
+        return self.__nand_path
+
+    @property
+    def result_path(self) -> str:
+        return self.__result_path
 
 
 def ssd(*args):
