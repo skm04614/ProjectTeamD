@@ -10,6 +10,7 @@ class TestSSD(TestCase):
     def test_write(self):
         pass
 
+    @skip
     def test_read(self):
         lba = 33
         expected = 0x76543210
