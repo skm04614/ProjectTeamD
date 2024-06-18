@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
-from overrides import overrides
-
 import re
 import sys
+import os.path
+from abc import ABC, abstractmethod
+from overrides import overrides
 
 
 class ISSD(ABC):
@@ -23,7 +23,7 @@ class ISSD(ABC):
 
 class SSD(ISSD):
     def __init__(self,
-                 ssd_name: str = "./nand.txt") -> None:
+                 ssd_name: str = os.path.dirname(__file__) + "/nand.txt") -> None:
         super().__init__()
         self.__ssd_name: str = ssd_name
 
@@ -63,7 +63,7 @@ def ssd(*args):
 
     lba = int(args[2])
     if op == 'R':
-        with open("result.txt", "w") as f:
+        with open(os.path.dirname(__file__) + "/result.txt", "w") as f:
             f.write(f"{my_ssd.read(lba)}")
             return
 
