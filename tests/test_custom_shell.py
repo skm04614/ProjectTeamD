@@ -15,7 +15,7 @@ class TestCustomShell(TestCase):
         self.cshell.write(10, 0x1234ABCD)
         self.cshell.read(10)
 
-        with open(os.path.dirname(__file__) + '\\..\\ssd\\result.txt', 'r') as f:
+        with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
             ret = f.read().strip()
 
         self.assertEqual(0x1234ABCD, int(ret, 6))
