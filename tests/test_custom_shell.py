@@ -28,7 +28,18 @@ class TestCustomShell(TestCase):
         pass
 
     def test_help(self):
-        pass
+        expected = ("write(lba, val) - writes a val on lba",
+                    "read(lba)       - reads the val written on lba",
+                    "exit()          - exits program",
+                    "help()          - prints manual to stdout",
+                    "full_write(val) - writes val to all lbas ranging from 0 to 99",
+                    "full_read()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
+        expected = '\n'.join(expected)
+
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.help()
+            result = buf.getvalue().strip()
+            self.assertEqual(expected, result)
 
     def test_full_write(self):
         pass
