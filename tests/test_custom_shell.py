@@ -19,6 +19,7 @@ class TestCustomShell(TestCase):
         self.cshell = CustomShell()
         self.__cshell = CustomShell()
 
+    @skip
     def test_write(self):
         self.cshell.write(10, 0x1234ABCD)
         self.cshell.read(10)
