@@ -12,6 +12,7 @@ class ISSD(ABC):
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
         self._data: OrderedDict[int, int] = OrderedDict()
         self._nand_path: str = nand_path
+        self._prepare_nand_path()
         self._prepare_nand_data()
 
         self._result_path: str = result_path
@@ -42,16 +43,19 @@ class ISSD(ABC):
                 f.write(f"[{lba}] 0x{val:08x}\n")
 
     def _prepare_nand_data(self) -> None:
-        if not os.path.exists(self._nand_path):
-            with open(self._nand_path, "w") as f:
-                for lba in range(0, 100):
-                    f.write(f"[{lba}] 0x{0:08x}\n")
-
         pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
         with open(self._nand_path, "r") as f:
             for line in f:
                 m = pattern.match(line)
                 self._data[int(m["lba"])] = int(m["val"], 16)
+
+    def _prepare_nand_path(self):
+        if os.path.exists(self._nand_path):
+            return
+
+        with open(self._nand_path, "w") as f:
+            for lba in range(0, 100):
+                f.write(f"[{lba}] 0x{0:08x}\n")
 
     def _prepare_result_path(self) -> None:
         with open(self._result_path, "w") as f:
