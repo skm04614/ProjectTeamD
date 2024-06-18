@@ -26,7 +26,7 @@ class TestCustomShell(TestCase):
         with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
             ret = f.read().strip()
 
-        self.assertEqual(0x1234ABCD, int(ret, 6))
+        self.assertEqual(0x1234ABCD, int(ret, 16))
 
     @skip
     def test_exception_when_invalid_argument_for_write(self):
