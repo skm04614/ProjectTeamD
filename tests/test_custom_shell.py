@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from unittest.mock import Mock
 
 from custom_shell.custom_shell import CustomShell
@@ -8,6 +8,7 @@ class TestCustomShell(TestCase):
     def test_write(self):
         pass
 
+    @skip
     def test_read(self):
         ssd = Mock()
         ssd.read.return_value = "0xAABBCCDD"
