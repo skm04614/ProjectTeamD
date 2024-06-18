@@ -17,8 +17,10 @@ def _print_lba_to_sample_val(lba: int) -> None:
 
 class TestCustomShell(TestCase):
     def setUp(self):
+        super().setUp()
         self.__cshell = CustomShell()
 
+    @skip
     def get_hex_values(self, file_path):
         with open(file_path, 'r') as file:
             lines = file.readlines()
@@ -30,7 +32,22 @@ class TestCustomShell(TestCase):
         return hex_values
 
     def test_write(self):
-        pass
+        self.__cshell.write(10, 0x1234ABCD)
+        self.__cshell.read(10)
+
+        with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
+            ret = f.read().strip()
+
+        self.assertEqual(0x1234ABCD, int(ret, 16))
+
+    @skip
+    def test_exception_when_invalid_argument_for_write(self):
+        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234ABCDD], [10, 'abcd'], [None, 0x1234ABCD],
+                    [10, None]]
+
+        for lba, val in test_arg:
+            with self.assertRaises(ValueError):
+                self.__cshell.write(lba, val)
 
     @skip
     def test_read(self):
@@ -40,7 +57,7 @@ class TestCustomShell(TestCase):
             with (self.subTest(f"lba: {lba}, ssd data read test!"),
                   io.StringIO() as buf, redirect_stdout(buf)):
                 ssd.read.return_value = data
-                CustomShell().read(lba)
+                self.__cshell.read(lba)
                 self.assertEqual(buf.getvalue().strip(), data)
 
     @skip
@@ -48,7 +65,7 @@ class TestCustomShell(TestCase):
         test_lbas = [-1, 101, '10', '', ' ', None]
         for lba in test_lbas:
             with self.assertRaises(ValueError):
-                CustomShell().read(lba)
+                self.__cshell.read(lba)
 
     def test_exit(self):
         pass

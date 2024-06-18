@@ -21,7 +21,8 @@ class CustomShell:
 
     def full_write(self,
                    val: int) -> None:
-        pass
+        for lba in range(0, 100):
+            self.write(lba, val)
 
     def full_read(self) -> None:
         for lba in range(0, 100):
