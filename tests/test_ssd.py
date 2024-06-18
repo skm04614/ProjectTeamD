@@ -27,7 +27,6 @@ class TestSSD(TestCase):
     @skip
     def test_read_with_invalid_lba(self):
         invalid_lbas = [-1, 100, ' ', '', None]
-        self.ssd = SSD()
 
         for lba in invalid_lbas:
             with self.subTest(f'SSD read test with invalid lba: {lba}'):
