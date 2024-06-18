@@ -23,4 +23,9 @@ class TestShell(TestCase):
         pass
 
     def test_full_read(self):
-        pass
+        ssd = Mock()
+        ssd_results = [f'0x{i:08X}' for i in range(100)]
+        ssd.read.side_effect = ssd_results
+        shell = Shell()
+        self.assertEqual(ssd.call_count, 100)
+        self.assertEqual(shell.full_read(), '\n'.join(ssd_results))
