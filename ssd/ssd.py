@@ -12,7 +12,7 @@ class SSD:
         with open(self.__ssd_name, "r") as f:
             for line in f:
                 m = pattern.match(line)
-                self.__data[m["lba"]] = m["val"]
+                self.__data[m["lba"]] = int(m["val"])
 
     def __del__(self) -> None:
         with open(self.__ssd_name, "w") as f:
@@ -31,20 +31,24 @@ class SSD:
         pass
 
 
-def ssd():
-    assert len(sys.argv) > 1, "Command line argument must be provided."
+def ssd(*args):
+    assert len(args) > 1, "Command line argument must be provided."
 
-    op = sys.argv[1]
+    my_ssd = SSD()
+
+    op = args[1]
     assert op in ('R', 'W'), "Only 'R' and 'W' are supported."
 
-    lba = int(sys.argv[2])
+    lba = int(args[2])
     if op == 'R':
-        # TODO implement logic
-        pass
-    else:
-        val = int(sys.argv[3])
-        # TODO implement logic
+        with open("result.txt", "w") as f:
+            f.write(f"{my_ssd.read(lba)}")
+            return
+
+    if op == 'W':
+        val = int(args[3])
+        my_ssd.write(lba, val)
 
 
 if __name__ == "__main__":
-    ssd()
+    ssd(*sys.argv)
