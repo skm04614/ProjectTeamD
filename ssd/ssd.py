@@ -42,7 +42,7 @@ def ssd(*args):
 
     lba = int(args[2])
     if op == 'R':
-        with open("result.txt", "w") as f:
+        with open(os.path.dirname(__file__) + "/result.txt", "w") as f:
             f.write(f"{my_ssd.read(lba)}")
             return
 
