@@ -1,3 +1,6 @@
+import io
+
+from contextlib import redirect_stdout
 from unittest import TestCase, skip
 from unittest.mock import Mock
 
@@ -13,9 +16,11 @@ class TestCustomShell(TestCase):
         ssd = Mock()
         test_tables = {0: "0x00000000", 50: "0xAABBCCDD", 99: "0xAABBCCD0"}
         for lba, data in test_tables.items():
-            with self.subTest(f"lba: {lba}, ssd data read test!"):
+            with (self.subTest(f"lba: {lba}, ssd data read test!"),
+                  io.StringIO() as buf, redirect_stdout(buf)):
                 ssd.read.return_value = data
-                self.assertEqual(CustomShell().read(lba), data)
+                CustomShell().read(lba)
+                self.assertEqual(buf.getvalue().strip(), data)
 
     def test_exit(self):
         pass
