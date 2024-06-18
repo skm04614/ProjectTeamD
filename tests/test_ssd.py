@@ -1,7 +1,6 @@
 import os
 
-from unittest import TestCase, skip
-from unittest.mock import Mock
+from unittest import TestCase
 
 from ssd.ssd import SSD
 
@@ -86,12 +85,3 @@ class TestSSD(TestCase):
                     os.remove(filename)
                 except OSError:
                     pass
-
-    @skip
-    def test_mock_write_and_read(self):
-        mk_ssd = Mock()
-        mk_ssd
-
-        tmp_nand_path = "./tmp_nand.txt"
-        tmp_result_path = "./tmp_result.txt"
-        tmp_ssd = SSD(tmp_nand_path, tmp_result_path)
