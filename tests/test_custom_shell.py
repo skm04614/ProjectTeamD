@@ -1,6 +1,6 @@
 import io
 from unittest import TestCase, skip
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from contextlib import redirect_stdout
 
 from custom_shell.custom_shell import CustomShell
