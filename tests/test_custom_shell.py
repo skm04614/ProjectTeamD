@@ -11,8 +11,11 @@ class TestCustomShell(TestCase):
     @skip
     def test_read(self):
         ssd = Mock()
-        ssd.read.return_value = "0xAABBCCDD"
-        self.assertEqual(CustomShell().read(0), "0xAABBCCDD")
+        test_tables = {0: "0x00000000", 50: "0xAABBCCDD", 99: "0xAABBCCD0"}
+        for lba, data in test_tables.items():
+            with self.subTest(f"lba: {lba}, ssd data read test!"):
+                ssd.read.return_value = data
+                self.assertEqual(CustomShell().read(lba), data)
 
     def test_exit(self):
         pass
