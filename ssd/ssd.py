@@ -1,10 +1,11 @@
+import os.path
 import re
 import sys
 
 
 class SSD:
     def __init__(self,
-                 ssd_name: str = "./nand.txt") -> None:
+                 ssd_name: str = os.path.dirname(__file__) + "/nand.txt") -> None:
         self.__ssd_name: str = ssd_name
 
         self.__data: dict[int, int] = {}
