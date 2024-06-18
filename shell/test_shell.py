@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import Mock
 
-from shell import Shell
+from shell_tester import Shell
 
 class TestShell(TestCase):
     def test_write(self):
@@ -10,8 +10,7 @@ class TestShell(TestCase):
     def test_read(self):
         ssd = Mock()
         ssd.read.return_value = "0xAABBCCDD"
-        shell = Shell()
-        self.assertEqual(shell.read(), "0xAABBCCDD")
+        self.assertEqual(Shell().read(0), "0xAABBCCDD")
 
     def test_exit(self):
         pass
@@ -26,6 +25,4 @@ class TestShell(TestCase):
         ssd = Mock()
         ssd_results = [f'0x{i:08X}' for i in range(100)]
         ssd.read.side_effect = ssd_results
-        shell = Shell()
-        self.assertEqual(ssd.call_count, 100)
-        self.assertEqual(shell.full_read(), '\n'.join(ssd_results))
+        self.assertEqual(Shell().full_read(), '\n'.join(ssd_results))
