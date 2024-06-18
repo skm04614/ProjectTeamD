@@ -27,9 +27,9 @@ class TestSSD(TestCase):
 
     @skip
     def test_read_with_out_of_range_lba(self):
-        invalid_lbas = [-1, 100]
+        out_of_range_lbas = [-1, 100]
 
-        for lba in invalid_lbas:
+        for lba in out_of_range_lbas:
             with self.subTest(f'SSD read test with out of range LBA: {lba}'):
                 try:
                     self.ssd.read(lba)
@@ -39,9 +39,9 @@ class TestSSD(TestCase):
 
     @skip
     def test_read_with_none_integer_lba(self):
-        invalid_lbas = [' ', '', [], {}]
+        none_integer_lbas = [' ', '', [], {}]
 
-        for lba in invalid_lbas:
+        for lba in none_integer_lbas:
             with self.subTest(f'SSD read test with none integer LBA: {lba}'):
                 try:
                     self.ssd.read(lba)
