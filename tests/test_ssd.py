@@ -5,6 +5,7 @@ from ssd.ssd import SSD
 
 class TestSSD(TestCase):
     def setUp(self):
+        super().setUp()
         self.ssd = SSD()
 
     @skip
