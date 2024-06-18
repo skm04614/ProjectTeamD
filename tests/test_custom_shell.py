@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 
-class TestShell(TestCase):
+class TestCustomShell(TestCase):
     def test_write(self):
         pass
 

@@ -1,19 +1,4 @@
-from ssd.ssd import ISSD
-
-
-class Shell:
-    def __init__(self,
-                 ssd: ISSD) -> None:
-        self.__ssd = ssd
-
-    def set_ssd(self,
-                ssd: ISSD) -> None:
-        self.__ssd = ssd
-
-    @property
-    def ssd(self) -> ISSD:
-        return self.__ssd
-
+class CustomShell:
     def write(self,
               lba: int,
               val: int) -> None:
