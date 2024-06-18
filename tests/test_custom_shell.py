@@ -44,11 +44,10 @@ class TestCustomShell(TestCase):
     def test_full_write(self):
         pass
 
-    @skip
     @patch.object(CustomShell, "read", side_effect=_print_lba_to_sample_val)
     def test_full_read(self, mk_cshell):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.full_read()
-            result = ', '.join(buf.getvalue().strip())
-            expected = ', '.join(str(_lba_to_sample_val(lba)) for lba in range(0, 100))
+            result = buf.getvalue().strip()
+            expected = '\n'.join(str(_lba_to_sample_val(lba)) for lba in range(0, 100))
             self.assertEqual(expected, result)

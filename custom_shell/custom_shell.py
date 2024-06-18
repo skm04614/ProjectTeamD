@@ -24,4 +24,5 @@ class CustomShell:
         pass
 
     def full_read(self) -> None:
-        pass
+        for lba in range(0, 100):
+            self.read(lba)
