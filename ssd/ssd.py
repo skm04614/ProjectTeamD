@@ -72,14 +72,20 @@ class SSD(ISSD):
     def write(self,
               lba: int,
               val: int) -> None:
-        if not 0 <= lba < 100:
-            raise ValueError("LBA is out of range [0, 100).")
-
-        if not 0 <= val <= 0xFFFFFFFF:
-            raise ValueError("target value is out of range [0, 0xFFFFFFFF].")
+        self.assert_invalid_input(lba, val)
 
         self._data[lba] = val
         self._update_nand()
+
+    def assert_invalid_input(self, lba, val):
+        if type(lba) is not int or type(val) is not int:
+            raise ValueError("lba or val type is not integer")
+        if not 0 <= lba <= 99:
+            raise ValueError("LBA is out of range [0, 100).")
+        if not 0x0 <= val <= 0xFFFFFFFF:
+            raise ValueError("target value is out of range [0, 0xFFFFFFFF].")
+        if len(f"{val:X}") != 8:
+            raise ValueError("the number of target value is not 10.")
 
     @overrides
     def read(self,
