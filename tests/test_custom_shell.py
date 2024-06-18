@@ -1,4 +1,7 @@
 from unittest import TestCase
+from unittest.mock import Mock
+
+from custom_shell.custom_shell import CustomShell
 
 
 class TestCustomShell(TestCase):
@@ -6,7 +9,9 @@ class TestCustomShell(TestCase):
         pass
 
     def test_read(self):
-        pass
+        ssd = Mock()
+        ssd.read.return_value = "0xAABBCCDD"
+        self.assertEqual(CustomShell().read(0), "0xAABBCCDD")
 
     def test_exit(self):
         pass
