@@ -63,9 +63,9 @@ class CustomShell:
         return True
 
     def testapp1(self) -> bool:
-        TEST_VALUE = "0x1234ABCD"
-        expected_result = "\n".join([f"[{lba}] - {TEST_VALUE}" for lba in range(0, 100)])
-        self.full_write(TEST_VALUE)
+        test_value = "0x1234ABCD"
+        expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
+        self.full_write(test_value)
         with io.StringIO() as buf, redirect_stdout(buf):
             self.full_read()
             result = buf.getvalue().strip()
