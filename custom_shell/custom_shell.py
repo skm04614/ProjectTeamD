@@ -47,7 +47,7 @@ class CustomShell:
         return True
 
     def full_write(self,
-                   val: int) -> bool:
+                   val: str) -> bool:
         for lba in range(0, 100):
             self.write(lba, val)
 
