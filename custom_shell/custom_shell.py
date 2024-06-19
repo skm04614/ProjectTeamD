@@ -11,6 +11,9 @@ class CustomShell:
     def __init__(self,
                  src_path: str = os.path.dirname(__file__) + "/../ssd/result.txt") -> None:
         self.__src_path = src_path
+        self.help_content = ""
+        with open(os.path.dirname(__file__) + "/../ssd/help.txt", 'r') as file:
+            self.help_content = file.read()
 
     def session(self) -> None:
         while True:
@@ -60,13 +63,7 @@ class CustomShell:
         return False
 
     def help(self) -> bool:
-        print("write(lba, val) - writes a val on lba")
-        print("read(lba)       - reads the val written on lba")
-        print("exit()          - exits program")
-        print("help()          - prints manual to stdout")
-        print("fullwrite(val)  - writes val to all lbas ranging from 0 to 99")
-        print("fullread()      - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
-        print("testapp1()      - runs testapp1, which performs fullwrite and fullread")
+        print(self.help_content)
 
         return True
 
