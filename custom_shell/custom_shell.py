@@ -67,6 +67,7 @@ class CustomShell:
         print("fullwrite(val)  - writes val to all lbas ranging from 0 to 99")
         print("fullread()      - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
         print("testapp1()      - runs testapp1, which performs fullwrite and fullread")
+        print("testapp2()      - runs testapp2, which performs write aging followed by read compare")
 
         return True
 
@@ -91,7 +92,34 @@ class CustomShell:
             self.fullread()
             result = buf.getvalue().strip()
         print(result)
-        print(f"TestApp1 was {'successful' if expected_result == result else 'failed'}!")
+        print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
+
+        return True
+
+    def testapp2(self) -> bool:
+        lower_lba = 0
+        upper_lba = 5
+
+        val = "0xAAAABBBB"
+        for _ in range(30):
+            for lba in range(lower_lba, upper_lba + 1):
+                self.write(lba, val)
+
+        val = "0x12345678"
+        for lba in range(lower_lba, upper_lba + 1):
+            self.write(lba, val)
+
+        verify_result = True
+        for lba in range(lower_lba, upper_lba + 1):
+            with io.StringIO() as buf, redirect_stdout(buf):
+                self.read(lba)
+                result = buf.getvalue().strip()
+                expected = f"[{lba}] - {val}"
+                verify_result = (result == expected)
+                if not verify_result:
+                    break
+
+        print(f"TestApp2 {'ran successfully' if verify_result else 'failed'}!")
 
         return True
 

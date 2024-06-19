@@ -73,7 +73,8 @@ class TestCustomShell(TestCase):
                     "help()          - prints manual to stdout",
                     "fullwrite(val)  - writes val to all lbas ranging from 0 to 99",
                     "fullread()      - reads all vals written on each lba ranging from 0 to 99 and prints to stdout",
-                    "testapp1()      - runs testapp1, which performs fullwrite and fullread")
+                    "testapp1()      - runs testapp1, which performs fullwrite and fullread",
+                    "testapp2()      - runs testapp2, which performs write aging followed by read compare")
         expected = '\n'.join(expected)
 
         with io.StringIO() as buf, redirect_stdout(buf):
