@@ -92,3 +92,28 @@ class TestCustomShell(TestCase):
             result = buf.getvalue().strip()
             expected = "\n".join(_lba_to_sample_val(lba) for lba in range(0, 100))
             self.assertEqual(expected, result)
+
+    @patch("builtins.input", side_effect=["write 0 0x12345678", "read 0", "exit"])
+    def test_session_write_read_exit(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("[0] - 0x12345678", result[0])
+            self.assertEqual("Exiting session.", result[1])
+
+    @patch("builtins.input", side_effect=["invalid_command", "exit"])
+    def test_session_invalid_command(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("INVALID COMMAND", result[0])
+            self.assertEqual("Exiting session.", result[1])
+
+    @patch("builtins.input", side_effect=["write 0", "exit"])
+    def test_session_invalid_parameters(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("INVALID SET OF PARAMETERS PROVIDED FOR 'write'.", result[0])
+            self.assertEqual("Use 'help' to see the manual.", result[1])
+            self.assertEqual("Exiting session.", result[2])
