@@ -1,4 +1,13 @@
+import sys
+
+
 class CustomShell:
+    def main(self) -> None:
+        while True:
+            cmd = input()
+            if cmd == 'exit':
+                self.exit()
+
     def write(self,
               lba: int,
               val: int) -> None:
@@ -9,7 +18,7 @@ class CustomShell:
         pass
 
     def exit(self) -> None:
-        pass
+        sys.exit()
 
     def help(self) -> None:
         print("write(lba, val) - writes a val on lba")
@@ -27,3 +36,6 @@ class CustomShell:
     def full_read(self) -> None:
         for lba in range(0, 100):
             self.read(lba)
+
+if __name__ == "__main__":
+    CustomShell().main()
