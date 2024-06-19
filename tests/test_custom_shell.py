@@ -1,4 +1,5 @@
 import io
+import os
 import subprocess
 from unittest import TestCase
 from unittest.mock import patch
@@ -7,8 +8,8 @@ from contextlib import redirect_stdout
 from custom_shell.custom_shell import CustomShell
 
 
-def _lba_to_sample_val(lba: int) -> int:
-    return lba << 4
+def _lba_to_sample_val(lba: int) -> str:
+    return f"0x{lba << 4:08X}"
 
 
 def _print_lba_to_sample_val(lba: int) -> None:
@@ -59,15 +60,8 @@ class TestCustomShell(TestCase):
             self.assertFalse(exit_code)
 
     def test_help(self):
-        expected = ("write(lba, val) - writes a val on lba",
-                    "read(lba)       - reads the val written on lba",
-                    "exit()          - exits program",
-                    "help()          - prints manual to stdout",
-                    "fullwrite(val)  - writes val to all lbas ranging from 0 to 99",
-                    "fullread()      - reads all vals written on each lba ranging from 0 to 99 and prints to stdout",
-                    "testapp1()      - runs testapp1, which performs fullwrite and fullread",
-                    "testapp2()      - runs testapp2, which performs write aging followed by read compare")
-        expected = '\n'.join(expected)
+        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", 'r') as file:
+            expected = file.read()
 
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.help()
@@ -96,5 +90,5 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.fullread()
             result = buf.getvalue().strip()
-            expected = '\n'.join(str(_lba_to_sample_val(lba)) for lba in range(0, 100))
+            expected = '\n'.join(_lba_to_sample_val(lba) for lba in range(0, 100))
             self.assertEqual(expected, result)
