@@ -29,7 +29,7 @@ class ISSD(ABC):
     @abstractmethod
     def write(self,
               lba: int,
-              val: int) -> None:
+              val: str) -> None:
         pass
 
     @abstractmethod
@@ -71,12 +71,17 @@ class SSD(ISSD):
     @overrides
     def write(self,
               lba: int,
-              val: int) -> None:
+              val: str) -> None:
+        if not isinstance(lba, int) or not isinstance(val, str):
+            raise TypeError("Please check input type. lba:int, val:str")
         if not 0 <= lba < 100:
             raise ValueError("LBA is out of range [0, 100).")
-
-        if not 0 <= val <= 0xFFFFFFFF:
-            raise ValueError("target value is out of range [0, 0xFFFFFFFF].")
+        if not len(val) == 10:
+            raise ValueError("target value must be 10 digits. (ex)0x00001234")
+        try:
+            val = int(val, 16)
+        except ValueError:
+            raise ValueError("val is not hex value")
 
         self._data[lba] = val
         self._update_nand()
@@ -107,7 +112,7 @@ def ssd(*args):
         my_ssd.read(lba)
 
     if op == 'W':
-        val = int(args[3], 16)
+        val = args[3]
         my_ssd.write(lba, val)
 
 
