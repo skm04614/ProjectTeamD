@@ -20,19 +20,18 @@ class TestCustomShell(TestCase):
         super().setUp()
         self.__cshell = CustomShell()
 
-    def get_hex_values(self, file_path):
-        with open(file_path, 'r') as file:
-            return [line.strip().split()[-1] for line in file]
+    def test_successful_write_followed_by_read(self):
+        valid_lbas = (0, 35, 99)
+        valid_vals = ("0x00000000", "0xFFFFFFFF", "0x1A2B3C4D")
 
-    @skip
-    def test_write(self):
-        self.__cshell.write(10, 0x1234ABCD)
-        self.__cshell.read(10)
+        for lba in valid_lbas:
+            for val in valid_vals:
+                self.__cshell.write(lba, val)
+                with io.StringIO() as buf, redirect_stdout(buf):
+                    self.__cshell.read(lba)
+                    result = buf.getvalue().strip()
 
-        with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
-            ret = f.read().strip()
-
-        self.assertEqual(0x1234ABCD, int(ret, 16))
+                    self.assertEqual(f"[{lba}] - {val}", result)
 
     @skip
     def test_exception_when_invalid_argument_for_write(self):
@@ -44,17 +43,6 @@ class TestCustomShell(TestCase):
                 self.__cshell.write(lba, val)
 
     @skip
-    def test_read(self):
-        ssd = Mock()
-        test_tables = {0: "0x00000000", 50: "0xAABBCCDD", 99: "0xAABBCCD0"}
-        for lba, data in test_tables.items():
-            with (self.subTest(f"lba: {lba}, ssd data read test!"),
-                  io.StringIO() as buf, redirect_stdout(buf)):
-                ssd.read.return_value = data
-                self.__cshell.read(lba)
-                self.assertEqual(buf.getvalue().strip(), data)
-
-    @skip
     def test_exception_when_invalid_argument_for_read(self):
         test_lbas = [-1, 101, '10', '', ' ', None]
         for lba in test_lbas:
@@ -62,7 +50,11 @@ class TestCustomShell(TestCase):
                 self.__cshell.read(lba)
 
     def test_exit(self):
-        pass
+        with io.StringIO() as buf, redirect_stdout(buf):
+            exit_code = self.__cshell.exit()
+            result = buf.getvalue().strip()
+            self.assertEqual("Exiting session.", result)
+            self.assertFalse(exit_code)
 
     def test_help(self):
         expected = ("write(lba, val) - writes a val on lba",
@@ -78,25 +70,19 @@ class TestCustomShell(TestCase):
             result = buf.getvalue().strip()
             self.assertEqual(expected, result)
 
-    @skip
-    def test_full_write_invalid_value(self):
-        invalid_value = '0x1234FFFFF'
-        with self.assertRaises(ValueError):
-            self.__cshell.full_write(invalid_value)
+    def test_full_write_followed_by_full_read(self):
+        val = "0x1A2B3C4D"
 
-    @skip
-    def test_full_write(self):
-        valid_value = '0x1234FFFF'
-        nand_path = os.path.dirname(__file__) + "/../ssd/nand.txt"
-        self.__cshell.full_write(valid_value)
+        self.__cshell.full_write(val)
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.full_read()
+            result = buf.getvalue().strip()
+            expected = '\n'.join(f"[{lba}] - {val}" for lba in range(0, 100))
 
-        hex_values = self.get_hex_values(nand_path)
-        for index, line in enumerate(hex_values):
-            with self.subTest(f'lba:{index} value:{line}'):
-                self.assertEqual(valid_value, line)
+            self.assertEqual(expected, result)
 
     @patch.object(CustomShell, "read", side_effect=_print_lba_to_sample_val)
-    def test_full_read(self, mk_cshell):
+    def test_patched_full_read(self, mk_cshell):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.full_read()
             result = buf.getvalue().strip()

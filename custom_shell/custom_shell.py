@@ -2,6 +2,10 @@ import os
 
 
 class CustomShell:
+    def __init__(self,
+                 src_path: str = os.path.dirname(__file__) + "/../ssd/result.txt") -> None:
+        self.__src_path = src_path
+
     def session(self) -> None:
         while True:
             args = input().split()
@@ -26,7 +30,7 @@ class CustomShell:
     def read(self,
              lba: int) -> bool:
         os.system(f"python ../ssd/ssd.py R {lba}")
-        with open("../ssd/result.txt", "r") as f:
+        with open(self.__src_path, "r") as f:
             print(f"{[int(lba)]} - {f.readline()}")
 
         return True
