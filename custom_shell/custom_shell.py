@@ -15,7 +15,8 @@ class CustomShell:
     def session(self) -> None:
         while True:
             args = input().split()
-            if len(args) == 0: continue
+            if not args:
+                continue
 
             method = getattr(self, args[0], None)
             if callable(method):
@@ -82,6 +83,7 @@ class CustomShell:
             result = buf.getvalue().strip()
         print(result)
         print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
+
 
     def testapp2(self) -> None:
         lower_lba = 0
