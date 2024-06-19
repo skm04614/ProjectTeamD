@@ -20,17 +20,11 @@ class TestCustomShell(TestCase):
         super().setUp()
         self.__cshell = CustomShell()
 
-    @skip
     def get_hex_values(self, file_path):
         with open(file_path, 'r') as file:
-            lines = file.readlines()
-        hex_values = []
-        for line in lines:
-            parts = line.strip().split(' ')
-            hex_value = parts[-1]
-            hex_values.append(hex_value)
-        return hex_values
+            return [line.strip().split()[-1] for line in file]
 
+    @skip
     def test_write(self):
         self.__cshell.write(10, 0x1234ABCD)
         self.__cshell.read(10)
@@ -99,8 +93,7 @@ class TestCustomShell(TestCase):
         hex_values = self.get_hex_values(nand_path)
         for index, line in enumerate(hex_values):
             with self.subTest(f'lba:{index} value:{line}'):
-                formatted_value = hex(valid_value).upper().replace('0X', '0x')
-                self.assertEqual(formatted_value, line)
+                self.assertEqual(f"0x{valid_value:08X}", line)
 
     @patch.object(CustomShell, "read", side_effect=_print_lba_to_sample_val)
     def test_full_read(self, mk_cshell):
