@@ -1,7 +1,6 @@
 import io
-import os
-from unittest import TestCase, skip
-from unittest.mock import Mock, patch
+from unittest import TestCase
+from unittest.mock import patch
 from contextlib import redirect_stdout
 
 from custom_shell.custom_shell import CustomShell
@@ -33,21 +32,32 @@ class TestCustomShell(TestCase):
 
                     self.assertEqual(f"[{lba}] - {val}", result)
 
-    @skip
-    def test_exception_when_invalid_argument_for_write(self):
-        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234ABCDD], [10, 'abcd'], [None, 0x1234ABCD],
-                    [10, None]]
-
-        for lba, val in test_arg:
-            with self.assertRaises(ValueError):
-                self.__cshell.write(lba, val)
-
-    @skip
-    def test_exception_when_invalid_argument_for_read(self):
-        test_lbas = [-1, 101, '10', '', ' ', None]
-        for lba in test_lbas:
-            with self.assertRaises(ValueError):
+    def test_out_of_range_lba_read(self):
+        invalid_lbas = (-1, 100, 170)
+        for lba in invalid_lbas:
+            with io.StringIO() as buf, redirect_stdout(buf):
                 self.__cshell.read(lba)
+                result = buf.getvalue().strip()
+
+                self.assertIn("ValueError", result)
+
+    def test_out_of_range_lba_write(self):
+        invalid_lbas = (-1, 100, 170)
+        for lba in invalid_lbas:
+            with io.StringIO() as buf, redirect_stdout(buf):
+                self.__cshell.write(lba, "0x12345678")
+                result = buf.getvalue().strip()
+
+                self.assertIn("ValueError", result)
+
+    def test_out_of_range_val_write(self):
+        invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
+        for val in invalid_vals:
+            with io.StringIO() as buf, redirect_stdout(buf):
+                self.__cshell.write(0, val)
+                result = buf.getvalue().strip()
+
+                self.assertIn("ValueError", result)
 
     def test_exit(self):
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -69,6 +79,15 @@ class TestCustomShell(TestCase):
             self.__cshell.help()
             result = buf.getvalue().strip()
             self.assertEqual(expected, result)
+
+    def test_out_of_range_val_full_write(self):
+        invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
+        for val in invalid_vals:
+            with io.StringIO() as buf, redirect_stdout(buf):
+                self.__cshell.full_write(val)
+                result = buf.getvalue().strip()
+
+                self.assertIn("ValueError", result)
 
     def test_full_write_followed_by_full_read(self):
         val = "0x1A2B3C4D"

@@ -1,7 +1,10 @@
 import os
+import subprocess
 
 
 class CustomShell:
+    SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
+
     def __init__(self,
                  src_path: str = os.path.dirname(__file__) + "/../ssd/result.txt") -> None:
         self.__src_path = src_path
@@ -22,14 +25,25 @@ class CustomShell:
 
     def write(self,
               lba: int,
-              val: int) -> bool:
-        os.system(f"python ../ssd/ssd.py W {lba} {val}")
+              val: str) -> bool:
+        result = subprocess.run(["python", self.SSD_FILEPATH, "W", str(lba), val],
+                                capture_output=True,
+                                text=True)
+        if result.returncode:
+            print(result.stderr)
+            return True
 
         return True
 
     def read(self,
              lba: int) -> bool:
-        os.system(f"python ../ssd/ssd.py R {lba}")
+        result = subprocess.run(["python", self.SSD_FILEPATH, "R", str(lba)],
+                                capture_output=True,
+                                text=True)
+        if result.returncode:
+            print(result.stderr)
+            return True
+
         with open(self.__src_path, "r") as f:
             print(f"{[int(lba)]} - {f.readline()}")
 

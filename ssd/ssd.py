@@ -2,7 +2,6 @@ import re
 import sys
 import os.path
 from abc import ABC, abstractmethod
-from overrides import overrides
 from collections import OrderedDict
 
 
@@ -68,7 +67,6 @@ class SSD(ISSD):
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
         super().__init__(nand_path, result_path)
 
-    @overrides
     def write(self,
               lba: int,
               val: str) -> None:
@@ -86,7 +84,6 @@ class SSD(ISSD):
         else:
             self._update_nand()
 
-    @overrides
     def read(self,
              lba: int) -> None:
         if not isinstance(lba, int):
