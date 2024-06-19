@@ -1,4 +1,5 @@
 import io
+import subprocess
 from unittest import TestCase
 from unittest.mock import patch
 from contextlib import redirect_stdout
@@ -35,29 +36,20 @@ class TestCustomShell(TestCase):
     def test_out_of_range_lba_read(self):
         invalid_lbas = (-1, 100, 170)
         for lba in invalid_lbas:
-            with io.StringIO() as buf, redirect_stdout(buf):
+            with self.assertRaises(subprocess.CalledProcessError):
                 self.__cshell.read(lba)
-                result = buf.getvalue().strip()
-
-                self.assertIn("ValueError", result)
 
     def test_out_of_range_lba_write(self):
         invalid_lbas = (-1, 100, 170)
         for lba in invalid_lbas:
-            with io.StringIO() as buf, redirect_stdout(buf):
+            with self.assertRaises(subprocess.CalledProcessError):
                 self.__cshell.write(lba, "0x12345678")
-                result = buf.getvalue().strip()
-
-                self.assertIn("ValueError", result)
 
     def test_out_of_range_val_write(self):
         invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
         for val in invalid_vals:
-            with io.StringIO() as buf, redirect_stdout(buf):
+            with self.assertRaises(subprocess.CalledProcessError):
                 self.__cshell.write(0, val)
-                result = buf.getvalue().strip()
-
-                self.assertIn("ValueError", result)
 
     def test_exit(self):
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -85,11 +77,8 @@ class TestCustomShell(TestCase):
     def test_out_of_range_val_fullwrite(self):
         invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
         for val in invalid_vals:
-            with io.StringIO() as buf, redirect_stdout(buf):
+            with self.assertRaises(subprocess.CalledProcessError):
                 self.__cshell.fullwrite(val)
-                result = buf.getvalue().strip()
-
-                self.assertIn("ValueError", result)
 
     def test_fullwrite_followed_by_fullread(self):
         val = "0x1A2B3C4D"
