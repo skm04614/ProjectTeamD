@@ -1,9 +1,15 @@
 import os
 
-from custom_shell.shell_command import WriteCommand
-from custom_shell.ssd_writer import SSDWriter
-from custom_shell.ssd_writer_invoker import SSDWriterInvoker
+from custom_shell.ssd_invoker import SSDWriterInvoker
 
+
+class SSDWriter:
+    def write(self,
+              lba: int,
+              val: int) -> bool:
+        os.system(f"python ../ssd/ssd.py W {lba} {val}")
+
+        return True
 
 class CustomShell:
     def __init__(self):
