@@ -93,7 +93,7 @@ class SSD(ISSD):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
-            f.write(f'0x{self._data[lba]:08X}')
+            f.write(f"0x{self._data[lba]:08X}")
 
 
 def ssd(*args):
@@ -102,13 +102,13 @@ def ssd(*args):
     my_ssd = SSD()
 
     op = args[1]
-    assert op in ('R', 'W'), "Only 'R' and 'W' are supported."
+    assert op in ("R", "W"), "Only 'R' and 'W' are supported."
 
     lba = int(args[2])
-    if op == 'R':
+    if op == "R":
         my_ssd.read(lba)
 
-    if op == 'W':
+    if op == "W":
         val = args[3]
         my_ssd.write(lba, val)
 
