@@ -71,8 +71,8 @@ class TestCustomShell(TestCase):
                     "read(lba)       - reads the val written on lba",
                     "exit()          - exits program",
                     "help()          - prints manual to stdout",
-                    "full_write(val) - writes val to all lbas ranging from 0 to 99",
-                    "full_read()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout",
+                    "fullwrite(val) - writes val to all lbas ranging from 0 to 99",
+                    "fullread()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout",
                     "testapp1()      - runs testapp1, which performs fullwrite and fullread")
         expected = '\n'.join(expected)
 
@@ -81,30 +81,30 @@ class TestCustomShell(TestCase):
             result = buf.getvalue().strip()
             self.assertEqual(expected, result)
 
-    def test_out_of_range_val_full_write(self):
+    def test_out_of_range_val_fullwrite(self):
         invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
         for val in invalid_vals:
             with io.StringIO() as buf, redirect_stdout(buf):
-                self.__cshell.full_write(val)
+                self.__cshell.fullwrite(val)
                 result = buf.getvalue().strip()
 
                 self.assertIn("ValueError", result)
 
-    def test_full_write_followed_by_full_read(self):
+    def test_fullwrite_followed_by_fullread(self):
         val = "0x1A2B3C4D"
 
-        self.__cshell.full_write(val)
+        self.__cshell.fullwrite(val)
         with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.full_read()
+            self.__cshell.fullread()
             result = buf.getvalue().strip()
             expected = '\n'.join(f"[{lba}] - {val}" for lba in range(0, 100))
 
             self.assertEqual(expected, result)
 
     @patch.object(CustomShell, "read", side_effect=_print_lba_to_sample_val)
-    def test_patched_full_read(self, mk_cshell):
+    def test_patched_fullread(self, mk_cshell):
         with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.full_read()
+            self.__cshell.fullread()
             result = buf.getvalue().strip()
             expected = '\n'.join(str(_lba_to_sample_val(lba)) for lba in range(0, 100))
             self.assertEqual(expected, result)

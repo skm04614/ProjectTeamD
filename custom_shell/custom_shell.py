@@ -64,20 +64,20 @@ class CustomShell:
         print("read(lba)       - reads the val written on lba")
         print("exit()          - exits program")
         print("help()          - prints manual to stdout")
-        print("full_write(val) - writes val to all lbas ranging from 0 to 99")
-        print("full_read()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
+        print("fullwrite(val) - writes val to all lbas ranging from 0 to 99")
+        print("fullread()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
         print("testapp1()      - runs testapp1, which performs fullwrite and fullread")
 
         return True
 
-    def full_write(self,
+    def fullwrite(self,
                    val: str) -> bool:
         for lba in range(0, 100):
             self.write(lba, val)
 
         return True
 
-    def full_read(self) -> bool:
+    def fullread(self) -> bool:
         for lba in range(0, 100):
             self.read(lba)
 
@@ -86,9 +86,9 @@ class CustomShell:
     def testapp1(self) -> bool:
         test_value = "0x1234ABCD"
         expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
-        self.full_write(test_value)
+        self.fullwrite(test_value)
         with io.StringIO() as buf, redirect_stdout(buf):
-            self.full_read()
+            self.fullread()
             result = buf.getvalue().strip()
         print(result)
         print(f"TestApp1 was {'successful' if expected_result == result else 'failed'}!")
