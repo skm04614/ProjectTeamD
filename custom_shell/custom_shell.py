@@ -1,4 +1,7 @@
+import io
 import os
+
+from contextlib import redirect_stdout
 
 
 class CustomShell:
@@ -56,6 +59,18 @@ class CustomShell:
     def full_read(self) -> bool:
         for lba in range(0, 100):
             self.read(lba)
+
+        return True
+
+    def testapp1(self) -> bool:
+        TEST_VALUE = "0x1234ABCD"
+        expected_result = "\n".join([f"[{lba}] - {TEST_VALUE}" for lba in range(0, 100)])
+        self.full_write(TEST_VALUE)
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.full_read()
+            result = buf.getvalue().strip()
+        print(result)
+        print(f"TestApp1 was {'successful' if expected_result == result else 'failed'}!")
 
         return True
 
