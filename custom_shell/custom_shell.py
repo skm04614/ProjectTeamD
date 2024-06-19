@@ -15,7 +15,8 @@ class CustomShell:
     def session(self) -> None:
         while True:
             args = input().split()
-            if not args: continue
+            if not args:
+                continue
 
             method = getattr(self, args[0], None)
             if callable(method):
