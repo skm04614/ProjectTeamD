@@ -84,7 +84,7 @@ class SSD(ISSD):
     @overrides
     def read(self,
              lba: int) -> None:
-        if type(lba) != int:
+        if not isinstance(lba, int):
             raise TypeError("LBA must be an integer.")
 
         if not 0 <= lba < 100:
