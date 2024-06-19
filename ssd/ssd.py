@@ -29,7 +29,7 @@ class ISSD(ABC):
     @abstractmethod
     def write(self,
               lba: int,
-              val: int) -> None:
+              val: str) -> None:
         pass
 
     @abstractmethod
@@ -71,23 +71,22 @@ class SSD(ISSD):
     @overrides
     def write(self,
               lba: int,
-              val: int) -> None:
-        self.assert_invalid_input(lba, val)
+              val: str) -> None:
+        if not isinstance(lba, int) or not isinstance(val, str):
+            raise TypeError("Please check input type. lba:int, val:str")
+        if not 0 <= lba < 100:
+            raise ValueError("LBA is out of range [0, 100).")
+        if not len(val) == 10:
+            raise ValueError("target value must be 10 digits. (ex)0x00001234")
+        try:
+            val = int(val, 16)
+            if not 0x0 <= val <= 0xFFFFFFFF:
+                raise ValueError("val is out of range [0x00000000, 0xFFFFFFFF].")
+        except ValueError:
+            raise ValueError("val is not hex value")
 
         self._data[lba] = val
         self._update_nand()
-
-    def assert_invalid_input(self,
-                             lba: int,
-                             val: int) -> Exception():
-        if not isinstance(lba, int) or not isinstance(val, int):
-            raise TypeError("LBA or val type is not integer")
-        if not 0 <= lba <= 99:
-            raise ValueError("LBA is out of range [0, 100).")
-        if not 0x0 <= val <= 0xFFFFFFFF:
-            raise ValueError("Target value is out of range [0, 0xFFFFFFFF].")
-        if len(f"{val:X}") != 8:
-            raise ValueError("The number of target value is not 10.")
 
     @overrides
     def read(self,
@@ -112,7 +111,7 @@ def ssd(*args):
         my_ssd.read(lba)
 
     if op == 'W':
-        val = int(args[3])
+        val = args[3]
         my_ssd.write(lba, val)
 
 
