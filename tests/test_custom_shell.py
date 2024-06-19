@@ -1,5 +1,6 @@
 import os.path
 import io
+import sys
 from unittest import TestCase, skip
 from unittest.mock import Mock, patch
 from contextlib import redirect_stdout
@@ -22,22 +23,48 @@ class TestCustomShell(TestCase):
 
     @skip
     def test_write(self):
-        self.__cshell.write(10, 0x1234ABCD)
+        self.__cshell.write(10, "0x1234ABCD")
         self.__cshell.read(10)
 
-        with open(os.path.dirname(__file__) + '/../ssd/result.txt', 'r') as f:
+        with open(os.path.dirname(__file__) + "/../ssd/result.txt", 'r') as f:
             ret = f.read().strip()
 
         self.assertEqual(0x1234ABCD, int(ret, 16))
 
-    @skip
-    def test_exception_when_invalid_argument_for_write(self):
-        test_arg = [[-1, 0x12345678], [101, 0x12345678], [10, 0x1234ABCDD], [10, 'abcd'], [None, 0x1234ABCD],
-                    [10, None]]
+    @patch.object(CustomShell, "write")
+    def test_write(self, mock_write):
+        mock_write.return_value = True
+
+        result = self.__cshell.write(10, "0x1234ABCD")
+        mock_write.assert_called_once_with(10, "0x1234ABCD")
+
+        self.assertTrue(result)
+
+    def test_write_with_invalid_argument_lba(self):
+        test_arg = [[-1, "0x12345678"], [101, "0x12345678"]]
 
         for lba, val in test_arg:
-            with self.assertRaises(ValueError):
-                self.__cshell.write(lba, val)
+            saved_stdout = sys.stdout
+            mock_stdout = io.StringIO()
+            sys.stdout = mock_stdout
+
+            self.__cshell.write(lba=lba, val=val)
+
+            self.assertEqual(mock_stdout.getvalue().strip(), "LBA is out of range [0, 100).")
+            sys.stdout = saved_stdout
+
+    def test_write_with_invalid_argument_val(self):
+        test_arg = [[10, "0x1234ABCDD"], [10, "1234ABCD"], [10, "0x1234"]]
+
+        for lba, val in test_arg:
+            saved_stdout = sys.stdout
+            mock_stdout = io.StringIO()
+            sys.stdout = mock_stdout
+
+            self.__cshell.write(lba=lba, val=val)
+
+            self.assertEqual(mock_stdout.getvalue().strip(), "invalid VAL format.")
+            sys.stdout = saved_stdout
 
     @skip
     def test_read(self):

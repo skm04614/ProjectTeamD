@@ -1,3 +1,6 @@
+import os
+
+
 class CustomShell:
     def session(self) -> None:
         while True:
@@ -13,9 +16,23 @@ class CustomShell:
             else:
                 print("INVALID COMMAND")
 
+    def ssd_command(self, cmd: str) -> None:
+        os.system(cmd)
+
     def write(self,
               lba: int,
-              val: int) -> bool:
+              val: str) -> bool:
+        # lba = int(lba)
+
+        if not (0 <= int(lba) <= 99):
+            print("LBA is out of range [0, 100).")
+            return True
+        if not val.startswith("0x") or len(val) != 10:
+            print("invalid VAL format.")
+            return True
+
+        self.ssd_command(f"python ../ssd/ssd.py W {lba} {val}")
+
         return True
 
     def read(self,
