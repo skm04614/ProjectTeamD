@@ -6,11 +6,14 @@ from contextlib import redirect_stdout
 
 from custom_shell.custom_shell import CustomShell
 
+
 def _lba_to_sample_val(lba: int) -> int:
     return lba << 4
 
+
 def _print_lba_to_sample_val(lba: int) -> None:
     print(_lba_to_sample_val(lba))
+
 
 class TestCustomShell(TestCase):
     def setUp(self):
