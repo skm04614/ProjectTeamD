@@ -7,8 +7,8 @@ from contextlib import redirect_stdout
 from custom_shell.custom_shell import CustomShell
 
 
-def _lba_to_sample_val(lba: int) -> int:
-    return lba << 4
+def _lba_to_sample_val(lba: int) -> str:
+    return f'0x{lba << 4:08X}'
 
 
 def _print_lba_to_sample_val(lba: int) -> None:
@@ -101,5 +101,5 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.fullread()
             result = buf.getvalue().strip()
-            expected = '\n'.join(str(_lba_to_sample_val(lba)) for lba in range(0, 100))
+            expected = '\n'.join(_lba_to_sample_val(lba) for lba in range(0, 100))
             self.assertEqual(expected, result)
