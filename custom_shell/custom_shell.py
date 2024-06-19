@@ -1,7 +1,7 @@
 class CustomShell:
     def write(self,
               lba: int,
-              val: str) -> None:
+              val: int) -> None:
         pass
 
     def read(self,
@@ -20,7 +20,7 @@ class CustomShell:
         print("full_read()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
 
     def full_write(self,
-                   val: str) -> None:
+                   val: int) -> None:
         for lba in range(0, 100):
             self.write(lba, val)
 
