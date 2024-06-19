@@ -13,7 +13,7 @@ class CustomShell:
         self.__src_path = src_path
 
         with open(os.path.dirname(__file__) + "/help.txt", 'r') as file:
-            self.help_content = file.read()
+            self.__help_content = file.read()
 
     def session(self) -> None:
         while True:
@@ -63,7 +63,7 @@ class CustomShell:
         return False
 
     def help(self) -> bool:
-        print(self.help_content)
+        print(self.__help_content)
 
         return True
 
