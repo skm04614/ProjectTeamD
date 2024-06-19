@@ -1,4 +1,5 @@
 import io
+import os
 from unittest import TestCase
 from unittest.mock import patch
 from contextlib import redirect_stdout
@@ -67,14 +68,8 @@ class TestCustomShell(TestCase):
             self.assertFalse(exit_code)
 
     def test_help(self):
-        expected = ('''write [lba] [val]   -	writes a val on lba (ex. write 10 0x1234ABCD)
-read [lba]          -	reads the val written on lba (ex. read 10)
-exit                -	exits program
-help                -	prints manual to stdout
-fullwrite           -	writes val to all lbas ranging from 0 to 99
-fullread		    -	reads all vals written on each lba ranging from 0 to 99 and prints to stdout
-testapp1		    -	runs testapp1, which performs fullwrite and fullread
-testapp2		    -	runs testapp2, which performs write aging followed by read compare''')
+        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", 'r') as file:
+            expected = file.read()
 
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.help()
