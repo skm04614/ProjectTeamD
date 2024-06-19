@@ -40,7 +40,7 @@ class ISSD(ABC):
     def _update_nand(self) -> None:
         with open(self._nand_path, "w") as f:
             for lba, val in self._data.items():
-                f.write(f"[{lba}] 0x{val:08x}\n")
+                f.write(f"[{lba}] 0x{val:08X}\n")
 
     def _prepare_nand_data(self) -> None:
         pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
@@ -55,7 +55,7 @@ class ISSD(ABC):
 
         with open(self._nand_path, "w") as f:
             for lba in range(0, 100):
-                f.write(f"[{lba}] 0x{0:08x}\n")
+                f.write(f"[{lba}] 0x{0:08X}\n")
 
     def _prepare_result_path(self) -> None:
         with open(self._result_path, "w") as f:
@@ -88,7 +88,7 @@ class SSD(ISSD):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
-            f.write(f'0x{self._data[lba]:08x}')
+            f.write(f'0x{self._data[lba]:08X}')
 
 
 def ssd(*args):
@@ -104,7 +104,7 @@ def ssd(*args):
         my_ssd.read(lba)
 
     if op == 'W':
-        val = int(args[3])
+        val = int(args[3], 16)
         my_ssd.write(lba, val)
 
 

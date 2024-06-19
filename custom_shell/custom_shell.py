@@ -1,3 +1,6 @@
+import os
+
+
 class CustomShell:
     def session(self) -> None:
         while True:
@@ -16,14 +19,21 @@ class CustomShell:
     def write(self,
               lba: int,
               val: int) -> bool:
+        os.system(f"python ../ssd/ssd.py W {lba} {val}")
+
         return True
 
     def read(self,
              lba: int) -> bool:
+        os.system(f"python ../ssd/ssd.py R {lba}")
+        with open("../ssd/result.txt", "r") as f:
+            print(f"{[int(lba)]} - {f.readline()}")
+
         return True
 
     def exit(self) -> bool:
         print("Exiting session.")
+
         return False
 
     def help(self) -> bool:
