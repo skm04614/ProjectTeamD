@@ -64,8 +64,8 @@ class CustomShell:
         print("read(lba)       - reads the val written on lba")
         print("exit()          - exits program")
         print("help()          - prints manual to stdout")
-        print("fullwrite(val) - writes val to all lbas ranging from 0 to 99")
-        print("fullread()     - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
+        print("fullwrite(val)  - writes val to all lbas ranging from 0 to 99")
+        print("fullread()      - reads all vals written on each lba ranging from 0 to 99 and prints to stdout")
         print("testapp1()      - runs testapp1, which performs fullwrite and fullread")
 
         return True
