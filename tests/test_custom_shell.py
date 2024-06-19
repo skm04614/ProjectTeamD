@@ -8,7 +8,7 @@ from custom_shell.custom_shell import CustomShell
 
 
 def _lba_to_sample_val(lba: int) -> str:
-    return f'0x{lba << 4:08X}'
+    return f"0x{lba << 4:08X}"
 
 
 def _print_lba_to_sample_val(lba: int) -> None:
