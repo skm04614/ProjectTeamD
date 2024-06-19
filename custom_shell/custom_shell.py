@@ -1,7 +1,15 @@
 import os
 
+from custom_shell.shell_command import WriteCommand
+from custom_shell.ssd_writer import SSDWriter
+from custom_shell.ssd_writer_invoker import SSDWriterInvoker
+
 
 class CustomShell:
+    def __init__(self):
+        self.ssd_writer = SSDWriter()
+        self.ssd_writer_invoker = SSDWriterInvoker()
+
     def session(self) -> None:
         while True:
             args = input().split()
@@ -19,8 +27,7 @@ class CustomShell:
     def write(self,
               lba: int,
               val: int) -> bool:
-        os.system(f"python ../ssd/ssd.py W {lba} {val}")
-
+        self.ssd_writer_invoker.execute_command(WriteCommand(self.ssd_writer, lba, val))
         return True
 
     def read(self,
