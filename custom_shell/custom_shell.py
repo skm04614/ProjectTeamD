@@ -12,7 +12,7 @@ class CustomShell:
                  src_path: str = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")) -> None:
         self.__src_path = src_path
 
-        with open(os.path.dirname(__file__) + "/help.txt", 'r') as file:
+        with open(os.path.dirname(__file__) + "/help.txt", "r") as file:
             self.__help_content = file.read()
 
     def session(self) -> None:

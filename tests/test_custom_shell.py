@@ -60,7 +60,7 @@ class TestCustomShell(TestCase):
             self.assertFalse(exit_code)
 
     def test_help(self):
-        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", 'r') as file:
+        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", "r") as file:
             expected = file.read()
 
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -81,7 +81,7 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.fullread()
             result = buf.getvalue().strip()
-            expected = '\n'.join(f"[{lba}] - {val}" for lba in range(0, 100))
+            expected = "\n".join(f"[{lba}] - {val}" for lba in range(0, 100))
 
             self.assertEqual(expected, result)
 
@@ -90,5 +90,5 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.fullread()
             result = buf.getvalue().strip()
-            expected = '\n'.join(_lba_to_sample_val(lba) for lba in range(0, 100))
+            expected = "\n".join(_lba_to_sample_val(lba) for lba in range(0, 100))
             self.assertEqual(expected, result)
