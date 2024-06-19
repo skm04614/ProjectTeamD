@@ -1,3 +1,6 @@
+import sys
+
+
 class CustomShell:
     def __init__(self) -> None:
         self.__session()
