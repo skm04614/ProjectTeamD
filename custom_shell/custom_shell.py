@@ -18,7 +18,8 @@ class CustomShell:
     def session(self) -> None:
         while True:
             args = input().split()
-            if len(args) == 0: continue
+            if not args:
+                continue
 
             method = getattr(self, args[0], None)
             if callable(method):
@@ -88,7 +89,34 @@ class CustomShell:
             self.fullread()
             result = buf.getvalue().strip()
         print(result)
-        print(f"TestApp1 was {'successful' if expected_result == result else 'failed'}!")
+        print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
+
+        return True
+
+    def testapp2(self) -> bool:
+        lower_lba = 0
+        upper_lba = 5
+
+        val = "0xAAAABBBB"
+        for _ in range(30):
+            for lba in range(lower_lba, upper_lba + 1):
+                self.write(lba, val)
+
+        val = "0x12345678"
+        for lba in range(lower_lba, upper_lba + 1):
+            self.write(lba, val)
+
+        verify_result = True
+        for lba in range(lower_lba, upper_lba + 1):
+            with io.StringIO() as buf, redirect_stdout(buf):
+                self.read(lba)
+                result = buf.getvalue().strip()
+                expected = f"[{lba}] - {val}"
+                verify_result = (result == expected)
+                if not verify_result:
+                    break
+
+        print(f"TestApp2 {'ran successfully' if verify_result else 'failed'}!")
 
         return True
 
