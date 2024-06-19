@@ -1,11 +1,5 @@
-import sys
-
-
 class CustomShell:
-    def __init__(self) -> None:
-        self.__session()
-
-    def __session(self) -> None:
+    def session(self) -> None:
         while True:
             args = input().split()
             method = getattr(self, args[0], None)
@@ -53,6 +47,9 @@ class CustomShell:
         for lba in range(0, 100):
             self.read(lba)
 
+        return True
+
 
 if __name__ == "__main__":
     cshell = CustomShell()
+    cshell.session()
