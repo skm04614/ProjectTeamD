@@ -76,15 +76,15 @@ class SSD(ISSD):
             raise TypeError("Please check input type. lba:int, val:str")
         if not 0 <= lba < 100:
             raise ValueError("LBA is out of range [0, 100).")
-        if not len(val) == 10:
+        if not len(val) == 10 or not val[:2] == "0x":
             raise ValueError("target value must be 10 digits. (ex)0x00001234")
-        try:
-            val = int(val, 16)
-        except ValueError:
-            raise ValueError("val is not hex value")
 
-        self._data[lba] = val
-        self._update_nand()
+        try:
+            self._data[lba] = int(val, 16)
+        except ValueError:
+            raise ValueError("Val must be hex value.")
+        else:
+            self._update_nand()
 
     @overrides
     def read(self,
