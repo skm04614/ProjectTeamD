@@ -60,7 +60,7 @@ class TestCustomShell(TestCase):
             self.assertFalse(exit_code)
 
     def test_help(self):
-        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", 'r') as file:
+        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", "r") as file:
             expected = file.read()
 
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -81,7 +81,7 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.fullread()
             result = buf.getvalue().strip()
-            expected = '\n'.join(f"[{lba}] - {val}" for lba in range(0, 100))
+            expected = "\n".join(f"[{lba}] - {val}" for lba in range(0, 100))
 
             self.assertEqual(expected, result)
 
@@ -90,7 +90,7 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.fullread()
             result = buf.getvalue().strip()
-            expected = '\n'.join(_lba_to_sample_val(lba) for lba in range(0, 100))
+            expected = "\n".join(_lba_to_sample_val(lba) for lba in range(0, 100))
             self.assertEqual(expected, result)
 
     def test_successful_testapp1(self):
@@ -110,3 +110,28 @@ class TestCustomShell(TestCase):
             result = buf.getvalue().strip()
 
         self.assertEqual("TestApp2 executed successfully.", result)
+
+    @patch("builtins.input", side_effect=["write 0 0x12345678", "read 0", "exit"])
+    def test_session_write_read_exit(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("[0] - 0x12345678", result[0])
+            self.assertEqual("Exiting session.", result[1])
+
+    @patch("builtins.input", side_effect=["invalid_command", "exit"])
+    def test_session_invalid_command(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("INVALID COMMAND", result[0])
+            self.assertEqual("Exiting session.", result[1])
+
+    @patch("builtins.input", side_effect=["write 0", "exit"])
+    def test_session_invalid_parameters(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("INVALID SET OF PARAMETERS PROVIDED FOR 'write'.", result[0])
+            self.assertEqual("Use 'help' to see the manual.", result[1])
+            self.assertEqual("Exiting session.", result[2])

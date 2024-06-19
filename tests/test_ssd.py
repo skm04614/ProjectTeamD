@@ -14,16 +14,16 @@ class TestSSD(TestCase):
         out_of_range_lbas = (-100, -3, -1, 100, 111, 145)
         for lba in out_of_range_lbas:
             with self.assertRaises(ValueError):
-                self.__ssd.write(lba, '0x00000100')
+                self.__ssd.write(lba, "0x00000100")
 
     def test_mismatch_type_lba_write(self):
         invalid_lbas = ("x", None)
         for lba in invalid_lbas:
             with self.assertRaises(TypeError):
-                self.__ssd.write(lba, '0x00000100')
+                self.__ssd.write(lba, "0x00000100")
 
     def test_out_of_range_val_write(self):
-        out_of_range_vals = ('-0x10', '-0x1', '0x100000000', '0x123456789', '0xABCDABCD0', '0x1234', '0xFFFFFF')
+        out_of_range_vals = ("-0x10", "-0x1", "0x100000000", "0x123456789", "0xABCDABCD0", "0x1234", "0xFFFFFF")
         for val in out_of_range_vals:
             with self.assertRaises(ValueError):
                 self.__ssd.write(0x0, val)
