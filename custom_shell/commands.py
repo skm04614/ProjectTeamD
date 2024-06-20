@@ -80,7 +80,7 @@ class EraseSizeCommand(ICommand):
 
     def execute(self) -> None:
         EraseRangeCommand(self._start_lba,
-                          self._start_lba + self._size - 1).execute()
+                          self._start_lba + self._size).execute()
 
 
 class EraseRangeCommand(ICommand):
