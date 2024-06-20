@@ -1,5 +1,6 @@
 import os
-
+import itertools
+import numpy as np
 from unittest import TestCase
 
 from custom_ssd.cssd import SSD
@@ -11,98 +12,108 @@ class TestSSD(TestCase):
         test_nand_path = os.path.join(os.path.dirname(__file__), "test_nand.txt")
         self.__ssd = SSD(test_nand_path)
 
+        self._valid_lbas = tuple(int(lba) for lba in np.linspace(self.__ssd.LBA_LOWER_BOUND,
+                                                                 self.__ssd.LBA_UPPER_BOUND,
+                                                                 7))
+
+        self._valid_vals = tuple(f"0x{int(val):08X}" for val in np.linspace(self.__ssd.VAL_LOWER_BOUND,
+                                                                            self.__ssd.VAL_UPPER_BOUND,
+                                                                            7))
+
+        self._invalid_lbas = (-100, -1, 100, 150)
+        self._wrong_typed_lbas = ([], None, "0", "1b", "a1")
+        self._invalid_vals = ("0x0", "0x1234", "FFFF0000", "0x100000000", "-0x12345678")
+        self._wrong_typed_vals = ([], None, 0xFFFFFFFF, 0x0)
+
     def tearDown(self):
         try:
             os.remove(self.__ssd.nand_path)
         except OSError:
             pass
 
-    def test_out_of_range_lba_write(self):
-        out_of_range_lbas = (-100, -3, -1, 100, 111, 145)
-        for lba in out_of_range_lbas:
+    def test_invalid_lba_write(self):
+        for lba in self._invalid_lbas:
             with self.assertRaises(ValueError):
-                self.__ssd.write(lba, "0x00000100")
+                self.__ssd.write(lba, self._valid_vals[0])
 
-    def test_mismatch_type_lba_write(self):
-        invalid_lbas = ("x", None)
-        for lba in invalid_lbas:
+    def test_mismatch_type_write(self):
+        for lba in self._wrong_typed_lbas:
             with self.assertRaises(TypeError):
-                self.__ssd.write(lba, "0x00000100")
+                self.__ssd.write(lba, self._valid_vals[0])
 
-    def test_out_of_range_val_write(self):
-        out_of_range_vals = ("-0x10", "-0x1", "0x100000000", "0x123456789", "0xABCDABCD0", "0x1234", "0xFFFFFF")
-        for val in out_of_range_vals:
+        for val in self._wrong_typed_vals:
+            with self.assertRaises(TypeError):
+                self.__ssd.write(self._valid_lbas[0], val)
+
+    def test_invalid_val_write(self):
+        for val in self._invalid_vals:
             with self.assertRaises(ValueError):
-                self.__ssd.write(0x0, val)
-
-    def test_mismatch_type_val_write(self):
-        invalid_vals = (1234, None)
-        for val in invalid_vals:
-            with self.assertRaises(TypeError):
-                self.__ssd.write(0x0, val)
+                self.__ssd.write(self._valid_lbas[0], val)
 
     def test_successful_write(self):
-        for lba in (0, 35, 99):
-            for val in ("0x00000000", "0x12345678", "0xFFFFFFFF"):
-                self.__ssd.write(lba, val)
+        for args in itertools.product(self._valid_lbas, self._valid_vals):
+            self.__ssd.write(*args)
+
+    def test_aging_write_followed_by_read(self):
+        lba = self._valid_lbas[2]
+        val = self._valid_vals[3]
+
+        for _ in range(100):
+            self.__ssd.write(lba, val)
+
+        self.__ssd.read(lba)
+        self.assertEqual(val, self.__ssd.custom_os.read_from_memory())
 
     def test_successful_write_followed_by_read(self):
-        for lba in (0, 35, 99):
-            for val in ("0x00000000", "0x12345678", "0xFFFFFFFF"):
-                self.__ssd.write(lba, val)
-                self.__ssd.read(lba)
+        for args in itertools.product(self._valid_lbas, self._valid_vals):
+            self.__ssd.write(*args)
+            self.__ssd.read(args[0])
+            self.assertEqual(args[1], self.__ssd.custom_os.read_from_memory())
 
-                self.assertEqual(val, self.__ssd.custom_os.read_from_memory())
-
-    def test_out_of_range_lba_read(self):
-        out_of_range_lbas = (-100, -3, -1, 100, 111, 145)
-        for lba in out_of_range_lbas:
+    def test_invalid_lba_read(self):
+        for lba in self._invalid_lbas:
             with self.assertRaises(ValueError):
                 self.__ssd.read(lba)
 
-    def test_mismatch_type_lba_read(self):
-        invalid_lbas = ("x", None)
-        for lba in invalid_lbas:
+    def test_mismatch_type_read(self):
+        for lba in self._wrong_typed_lbas:
             with self.assertRaises(TypeError):
                 self.__ssd.read(lba)
 
     def test_read_new_ssd(self):
-        for lba in range(0, 100):
+        for lba in range(self.__ssd.LBA_LOWER_BOUND, self.__ssd.LBA_UPPER_BOUND):
             self.__ssd.read(lba)
             self.assertEqual("0x00000000", self.__ssd.custom_os.read_from_memory())
 
     def test_mismatch_type_erase(self):
-        error_typed_values = ("x", None)
-        for val in error_typed_values:
+        for lba in self._wrong_typed_lbas:
             with self.assertRaises(TypeError):
-                self.__ssd.erase(val, 10)
-            with self.assertRaises(TypeError):
-                self.__ssd.erase(0, val)
+                self.__ssd.erase(lba, 1)
 
-    def test_out_of_range_start_lba_erase(self):
-        out_of_range_lbas = (-1, 100, 150, -10)
-        for lba in out_of_range_lbas:
+        for size in (None, [], "5"):
+            with self.assertRaises(TypeError):
+                self.__ssd.erase(self._valid_lbas[0], size)
+
+    def test_invalid_start_lba_erase(self):
+        for lba in self._invalid_lbas:
             with self.assertRaises(ValueError):
                 self.__ssd.erase(lba, 5)
 
-    def test_out_of_range_end_lba_erase(self):
-        start_lbas = (98, 110, 99, 91)
-        for lba in start_lbas:
+    def test_invalid_end_lba_erase(self):
+        for lba in (98, 110, 99, 91):
             with self.assertRaises(ValueError):
                 self.__ssd.erase(lba, 10)
 
-    def test_out_of_range_size_erase(self):
-        invalid_sizes = (-1, -10, 11, 20, 0)
-        for size in invalid_sizes:
+    def test_invalid_size_erase(self):
+        for size in (-1, -10, 11, 20, 0):
             with self.assertRaises(ValueError):
-                self.__ssd.erase(50, size)
+                self.__ssd.erase(self._valid_lbas[0], size)
 
     def test_successful_erase_verify(self):
         for lba in range(0, 100):
             self.__ssd.write(lba, "0x12345678")
 
-        valid_args = ((0, 10), (2, 10), (90, 10), (27, 5), (31, 9), (99, 1))
-        for args in valid_args:
+        for args in ((0, 10), (2, 10), (2, 5), (14, 10), (90, 10), (27, 5), (31, 9), (99, 1)):
             self.__ssd.erase(*args)
 
             start_lba = args[0]
