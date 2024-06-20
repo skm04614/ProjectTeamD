@@ -2,7 +2,7 @@ import os
 
 from unittest import TestCase
 
-from ssd.ssd import SSD
+from custom_ssd.cssd import SSD
 
 
 class TestSSD(TestCase):
