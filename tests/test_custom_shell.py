@@ -1,11 +1,11 @@
 import io
 import os
 import subprocess
+
 from unittest import TestCase
 from unittest.mock import patch
 from contextlib import redirect_stdout
-
-from custom_shell.custom_shell import CustomShell
+from custom_shell.cshell import CustomShell
 
 
 def _lba_to_sample_val(lba: int) -> str:

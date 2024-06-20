@@ -3,14 +3,11 @@ import os
 import subprocess
 
 from contextlib import redirect_stdout
+from custom_shell.commands import WriteCommand, ReadCommand, EraseCommand, invoke_command
 
 
 class CustomShell:
-    SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
-
-    def __init__(self,
-                 src_path: str = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")) -> None:
-        self.__src_path = src_path
+    def __init__(self) -> None:
 
         with open(os.path.dirname(__file__) + "/help.txt", "r") as file:
             self.__help_content = file.read()
@@ -38,22 +35,11 @@ class CustomShell:
     def write(self,
               lba: int,
               val: str) -> None:
-        try:
-            subprocess.run(["python", self.SSD_FILEPATH, "W", str(lba), val],
-                           check=True, text=True, timeout=15, capture_output=True)
-        except subprocess.CalledProcessError:
-            raise
+        invoke_command(WriteCommand(lba, val))
 
     def read(self,
              lba: int) -> None:
-        try:
-            subprocess.run(["python", self.SSD_FILEPATH, "R", str(lba)],
-                           check=True, text=True, timeout=15, capture_output=True)
-        except subprocess.CalledProcessError:
-            raise
-
-        with open(self.__src_path, "r") as f:
-            print(f"{[int(lba)]} - {f.readline()}")
+        invoke_command(ReadCommand(lba))
 
     def exit(self) -> None:
         print("Exiting session.")
@@ -78,15 +64,7 @@ class CustomShell:
     def erase_range(self,
                     start_lba: int,
                     end_lba: int) -> None:
-        slba = start_lba
-        while slba + 10 < end_lba:
-            subprocess.run(["python", self.SSD_FILEPATH, "E", str(slba), str(10)],
-                           check=True, text=True, timeout=15, capture_output=True)
-            slba += 10
-
-        if slba < end_lba:
-            subprocess.run(["python", self.SSD_FILEPATH, "E", str(slba), str(end_lba - slba + 1)],
-                           check=True, text=True, timeout=15, capture_output=True)
+        invoke_command(EraseCommand(start_lba, end_lba))
 
     def testapp1(self) -> None:
         test_value = "0x1234ABCD"
