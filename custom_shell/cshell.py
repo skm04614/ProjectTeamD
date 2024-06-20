@@ -2,7 +2,7 @@ import io
 import sys
 
 from contextlib import redirect_stdout
-from custom_shell.commands import *
+from custom_shell.command import *
 
 
 class CustomShell:
