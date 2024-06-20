@@ -19,10 +19,11 @@ class CommandBuffer:
     def optimize_buf(self):
         pass
 
-    def flush_buf(self):
+    def flush(self):
         self.__buf = []
 
-    def search(self, lba):
+    def search(self,
+               lba: int):
         result = None
         for cmd in self.__buf:
             split_cmd = cmd.split(" ")
@@ -32,5 +33,8 @@ class CommandBuffer:
                 result = 0x00000000
         return result
 
-    def check_erase_range(self, lba, start_lba, size):
+    def check_erase_range(self,
+                          lba: int,
+                          start_lba: int,
+                          size: int):
         return start_lba <= lba < start_lba + size

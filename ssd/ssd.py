@@ -97,8 +97,8 @@ class SSD(ISSD):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
-            data = self._buffer.search(lba)
-            f.write(f"0x{self._data[lba] if data is None else data:08X}")
+            data = self._buffer.search(lba) or self._data[lba]
+            f.write(f"0x{data:08X}")
 
     def erase(self,
               start_lba: int,
@@ -125,12 +125,12 @@ class SSD(ISSD):
     def flush(self):
         cmd_list = self._buffer.get_command_list
         for cmd in cmd_list:
-            cmd_split = cmd.split(' ')
-            if cmd_split[0] == "W":
-                self.write(int(cmd_split[1]), cmd_split[2])
-            elif cmd_split[0] == "E":
-                self.erase(int(cmd_split[1]), int(cmd_split[2]))
-        self._buffer.flush_buf()
+            args = cmd.split(' ')
+            if args[0] == "W":
+                self.write(int(args[1]), args[2])
+            elif args[0] == "E":
+                self.erase(int(args[1]), int(args[2]))
+        self._buffer.flush()
 
     @staticmethod
     def is_lba_valid(lba: int,
