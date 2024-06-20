@@ -114,6 +114,7 @@ class CustomShell:
         if not os.path.exists(scenario_list):
             print("Scenario does not exist.")
 
+        print("--------------------Runner Start--------------------")
         with open(scenario_list, "r") as f:
             for line in f:
                 scenario = line.strip()
@@ -127,11 +128,15 @@ class CustomShell:
 
                         if not result:
                             print("Fail!")
-                            return
+                            break
                         print("Pass")
                     except subprocess.CalledProcessError:
                         print("Fail!")
-                        return
+                        break
+                else:
+                    print("INVALID SCENARIO")
+                    break
+        print("---------------------Runner End---------------------")
 
 
 if __name__ == "__main__":
