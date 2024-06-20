@@ -71,7 +71,7 @@ class CustomShell:
         for lba in range(0, 100):
             self.read(lba)
 
-    def testapp1(self) -> None:
+    def testapp1(self) -> bool:
         test_value = "0x1234ABCD"
         expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
         self.fullwrite(test_value)
@@ -81,7 +81,9 @@ class CustomShell:
         print(result)
         print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
 
-    def testapp2(self) -> None:
+        return expected_result == result
+
+    def testapp2(self) -> bool:
         lower_lba = 0
         upper_lba = 5
 
@@ -103,9 +105,10 @@ class CustomShell:
                     print(f"TestApp2 failed at LBA[{lba}]")
                     print(f"Expected={expected}")
                     print(f"Actual={result}")
-                    return
+                    return False
 
         print(f"TestApp2 executed successfully.")
+        return True
 
     def runner(self, scenario_list: str) -> None:
         if not os.path.exists(scenario_list):
@@ -114,8 +117,21 @@ class CustomShell:
         with open(scenario_list, "r") as f:
             for line in f:
                 scenario = line.strip()
-                print(f"{scenario:<30} --- Run...", end="")
-                print("Pass")
+                print(f"{scenario:<20} --- Run...", end="", flush=True)
+
+                method = getattr(self, scenario, None)
+                if callable(method):
+                    try:
+                        with io.StringIO() as buf, redirect_stdout(buf):
+                            result = method()
+
+                        if not result:
+                            print("Fail!")
+                            return
+                        print("Pass")
+                    except subprocess.CalledProcessError:
+                        print("Fail!")
+                        return
 
 
 if __name__ == "__main__":
