@@ -4,6 +4,7 @@ import os.path
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+from ssd.command_buffer import *
 
 class ISSD(ABC):
     def __init__(self,
@@ -16,6 +17,7 @@ class ISSD(ABC):
 
         self._result_path: str = result_path
         self._prepare_result_path()
+        self._buffer = CommandBuffer()
 
     @property
     def nand_path(self) -> str:
@@ -95,7 +97,8 @@ class SSD(ISSD):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
-            f.write(f"0x{self._data[lba]:08X}")
+            data = self._buffer.search(lba)
+            f.write(f"0x{self._data[lba] if data is None else data:08X}")
 
     def erase(self,
               start_lba: int,
@@ -119,6 +122,16 @@ class SSD(ISSD):
         for lba in range(start_lba, end_lba + 1):
             self.write(lba, "0x00000000")
 
+    def flush(self):
+        cmd_list = self._buffer.get_command_list
+        for cmd in cmd_list:
+            cmd_split = cmd.split(' ')
+            if cmd_split[0] == "W":
+                self.write(int(cmd_split[1]), cmd_split[2])
+            elif cmd_split[0] == "E":
+                self.erase(int(cmd_split[1]), int(cmd_split[2]))
+        self._buffer.flush_buf()
+
     @staticmethod
     def is_lba_valid(lba: int,
                      lower_bound: int,
@@ -133,6 +146,7 @@ def ssd(*args):
 
     op = args[1]
     if op == "F":
+        my_ssd.flush()
         return
 
     lba = int(args[2])
