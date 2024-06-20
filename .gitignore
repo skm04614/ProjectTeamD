@@ -1,5 +1,12 @@
 __pycache__/
 .idea/
 .venv/
+
+# ssd files
 ssd/**.txt
-/htmlcov
+
+htmlcov/
+
+# log files
+custom_logger/**.log
+custom_logger/**.zip
