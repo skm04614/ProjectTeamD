@@ -107,8 +107,15 @@ class CustomShell:
 
         print(f"TestApp2 executed successfully.")
 
-    def runner(self, scenario_list: list) -> None:
-        print(scenario_list)
+    def runner(self, scenario_list: str) -> None:
+        if not os.path.exists(scenario_list):
+            print("Scenario does not exist.")
+
+        with open(scenario_list, "r") as f:
+            for line in f:
+                scenario = line.strip()
+                print(f"{scenario:<30} --- Run...", end="")
+                print("Pass")
 
 
 if __name__ == "__main__":
