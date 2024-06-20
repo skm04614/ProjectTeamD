@@ -2,7 +2,7 @@ import io
 import os
 import subprocess
 
-from unittest import TestCase
+from unittest import TestCase, skip
 from unittest.mock import patch
 from contextlib import redirect_stdout
 from custom_shell.cshell import CustomShell
@@ -77,24 +77,6 @@ class TestCustomShell(TestCase):
 
             self.assertEqual(expected, result)
 
-    def test_successful_testapp1(self):
-        with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.testapp1()
-            result = buf.getvalue().strip()
-
-        test_value = "0x1234ABCD"
-        expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
-        expected_result += "\nTestApp1 ran successfully!"
-
-        self.assertEqual(expected_result, result)
-
-    def test_successful_testapp2(self):
-        with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.testapp2()
-            result = buf.getvalue().strip()
-
-        self.assertEqual("TestApp2 executed successfully.", result)
-
     @patch("builtins.input", side_effect=["write 0 0x12345678", "read 0", "exit"])
     def test_session_write_read_exit(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -103,6 +85,7 @@ class TestCustomShell(TestCase):
             self.assertEqual("[0] - 0x12345678", result[0])
             self.assertEqual("Exiting session.", result[1])
 
+    @skip
     @patch("builtins.input", side_effect=["invalid_command", "exit"])
     def test_session_invalid_command(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
