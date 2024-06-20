@@ -1,79 +1,76 @@
 import io
-import os
-import subprocess
 import sys
 
 from contextlib import redirect_stdout
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from custom_shell.commands import WriteCommand, ReadCommand, EraseCommand, invoke_command
+from custom_shell.commands import *
 
 
 class CustomShell:
-    def __init__(self) -> None:
-
-        with open(os.path.dirname(__file__) + "/help.txt", "r") as file:
-            self.__help_content = file.read()
-
     def session(self) -> None:
         while True:
             args = input().split()
             if not args:
                 continue
 
-            method = getattr(self, args[0], None)
-            if callable(method):
+            operation = args[0]
+            if operation == "exit":
+                print("Exiting session.")
+                return
+
+            # TODO: refactor out testapp1 and testapp2
+            if operation == "testapp1":
+                self.testapp1()
+            elif operation == "testapp2":
+                self.testapp2()
+            else:
                 try:
-                    method(*args[1:])
-                    if method.__name__ == "exit":
-                        return
+                    CustomShell.invoke_command(CustomShell.command_factory(*args))
+                except InvalidCommandException:
+                    print("INVALID COMMAND")
                 except TypeError:
-                    print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{method.__name__}'.")
+                    print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
                     print("Use 'help' to see the manual.")
                 except subprocess.CalledProcessError as e:
                     print(e.stderr)
-            else:
-                print("INVALID COMMAND")
 
-    def write(self,
-              lba: int,
-              val: str) -> None:
-        invoke_command(WriteCommand(lba, val))
+    @staticmethod
+    def invoke_command(command: ICommand) -> None:
+        command.execute()
 
-    def read(self,
-             lba: int) -> None:
-        invoke_command(ReadCommand(lba))
+    @staticmethod
+    def command_factory(operation: str,
+                        *args) -> ICommand:
+        if operation == "read":
+            return ReadCommand(*args)
 
-    def exit(self) -> None:
-        print("Exiting session.")
+        if operation == "write":
+            return WriteCommand(*args)
 
-    def help(self) -> None:
-        print(self.__help_content)
+        if operation == "fullwrite":
+            return FullWriteCommand(*args)
 
-    def fullwrite(self,
-                  val: str) -> None:
-        for lba in range(0, 100):
-            self.write(lba, val)
+        if operation == "fullread":
+            return FullReadCommand(*args)
 
-    def fullread(self) -> None:
-        for lba in range(0, 100):
-            self.read(lba)
+        if operation == "help":
+            return HelpCommand(*args)
 
-    def erase(self,
-              lba: int,
-              size: int) -> None:
-        self.erase_range(lba, lba + size - 1)
+        if operation == "erase":
+            return EraseSizeCommand(*args)
 
-    def erase_range(self,
-                    start_lba: int,
-                    end_lba: int) -> None:
-        invoke_command(EraseCommand(start_lba, end_lba))
+        if operation == "erase_range":
+            return EraseRangeCommand(*args)
+
+        raise InvalidCommandException(f"Requested operation, '{operation}', is not supported.")
 
     def testapp1(self) -> bool:
         test_value = "0x1234ABCD"
         expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
-        self.fullwrite(test_value)
+
+        CustomShell.invoke_command(CustomShell.command_factory("fullwrite", test_value))
         with io.StringIO() as buf, redirect_stdout(buf):
-            self.fullread()
+            CustomShell.invoke_command(CustomShell.command_factory("fullread"))
             result = buf.getvalue().strip()
         print(result)
         print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
@@ -87,15 +84,16 @@ class CustomShell:
         val = "0xAAAABBBB"
         for _ in range(30):
             for lba in range(lower_lba, upper_lba + 1):
-                self.write(lba, val)
+                CustomShell.invoke_command(CustomShell.command_factory("write", lba, val))
 
         val = "0x12345678"
         for lba in range(lower_lba, upper_lba + 1):
-            self.write(lba, val)
+            CustomShell.invoke_command(CustomShell.command_factory("write", lba, val))
 
         for lba in range(lower_lba, upper_lba + 1):
             with io.StringIO() as buf, redirect_stdout(buf):
-                self.read(lba)
+                CustomShell.invoke_command(CustomShell.command_factory("read", lba))
+
                 result = buf.getvalue().strip()
                 expected = f"[{lba}] - {val}"
                 if result != expected:
@@ -108,14 +106,14 @@ class CustomShell:
         return True
 
     def runner(self,
-               scenario_list: str) -> None:
-        testable_scenarios = ('testapp1', 'testapp2')
-
-        if not os.path.exists(scenario_list):
+               scenario_path: str) -> None:
+        if not os.path.exists(scenario_path):
             print("Scenario does not exist.")
+            return
 
         print("--------------------Runner Start--------------------")
-        with open(scenario_list, "r") as f:
+        testable_scenarios = ('testapp1', 'testapp2')
+        with open(scenario_path, "r") as f:
             for line in f:
                 scenario = line.strip()
                 print(f"{scenario:<20} --- Run...", end="", flush=True)
