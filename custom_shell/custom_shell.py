@@ -111,6 +111,8 @@ class CustomShell:
         return True
 
     def runner(self, scenario_list: str) -> None:
+    def runner(self,
+               scenario_list: str) -> None:
         testable_scenarios = ('testapp1', 'testapp2')
 
         if not os.path.exists(scenario_list):
