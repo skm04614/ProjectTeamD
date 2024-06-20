@@ -8,7 +8,7 @@ from custom_shell.commands import *
 class CustomShell:
     def session(self) -> None:
         while True:
-            args = input().split()
+            args = input("==================================================\n>> ").split()
             if not args:
                 continue
 
