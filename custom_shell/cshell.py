@@ -30,6 +30,9 @@ class CustomShell:
                 except (TypeError, IndexError):
                     print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
                     print("Use 'help' to see the manual.")
+                except ValueError:
+                    print(f"'{operation}' IS CALLED WITH INVALID TYPED SET OF PARAMETERS.")
+                    print("Use 'help' to see the manual.")
                 except subprocess.CalledProcessError as e:
                     print(e.stderr)
 
