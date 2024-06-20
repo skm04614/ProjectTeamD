@@ -132,6 +132,9 @@ def ssd(*args):
     my_ssd = SSD()
 
     op = args[1]
+    if op == "F":
+        return
+
     lba = int(args[2])
     if op == "R":
         my_ssd.read(lba)
