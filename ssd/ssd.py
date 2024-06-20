@@ -5,6 +5,21 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 
+def singleton(cls):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    for attr_name, attr_value in cls.__dict__.items():
+        if isinstance(attr_value, (classmethod, staticmethod)):
+            setattr(get_instance, attr_name, attr_value)
+
+    return get_instance
+
+
 class ISSD(ABC):
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
@@ -61,6 +76,7 @@ class ISSD(ABC):
             f.write("")
 
 
+@singleton
 class SSD(ISSD):
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
