@@ -111,7 +111,7 @@ class CustomShell:
         return True
 
     def runner(self, scenario_list: str) -> None:
-        test_scenarios = ('testapp1', 'testapp2')
+        testable_scenarios = ('testapp1', 'testapp2')
 
         if not os.path.exists(scenario_list):
             print("Scenario does not exist.")
@@ -123,7 +123,7 @@ class CustomShell:
                 print(f"{scenario:<20} --- Run...", end="", flush=True)
 
                 method = getattr(self, scenario, None)
-                if scenario in test_scenarios and callable(method):
+                if scenario in testable_scenarios and callable(method):
                     try:
                         with io.StringIO() as buf, redirect_stdout(buf):
                             result = method()
