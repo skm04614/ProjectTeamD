@@ -99,7 +99,7 @@ class EraseRangeCommand(ICommand):
 
 class HelpCommand(ICommand):
     def execute(self) -> None:
-        with open(os.path.join(os.path.dirname(__file__), "help.txt"), "r") as f:
+        with open(os.path.join(os.path.dirname(__file__), "manual.txt"), "r") as f:
             print(f.read())
 
 
