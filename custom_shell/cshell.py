@@ -1,6 +1,7 @@
 import io
 import os
 import subprocess
+import sys
 
 from contextlib import redirect_stdout
 from custom_shell.commands import WriteCommand, ReadCommand, EraseCommand, invoke_command
@@ -66,7 +67,7 @@ class CustomShell:
                     end_lba: int) -> None:
         invoke_command(EraseCommand(start_lba, end_lba))
 
-    def testapp1(self) -> None:
+    def testapp1(self) -> bool:
         test_value = "0x1234ABCD"
         expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
         self.fullwrite(test_value)
@@ -76,7 +77,9 @@ class CustomShell:
         print(result)
         print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
 
-    def testapp2(self) -> None:
+        return expected_result == result
+
+    def testapp2(self) -> bool:
         lower_lba = 0
         upper_lba = 5
 
@@ -98,11 +101,47 @@ class CustomShell:
                     print(f"TestApp2 failed at LBA[{lba}]")
                     print(f"Expected={expected}")
                     print(f"Actual={result}")
-                    return
+                    return False
 
         print(f"TestApp2 executed successfully.")
+        return True
+
+    def runner(self,
+               scenario_list: str) -> None:
+        testable_scenarios = ('testapp1', 'testapp2')
+
+        if not os.path.exists(scenario_list):
+            print("Scenario does not exist.")
+
+        print("--------------------Runner Start--------------------")
+        with open(scenario_list, "r") as f:
+            for line in f:
+                scenario = line.strip()
+                print(f"{scenario:<20} --- Run...", end="", flush=True)
+
+                method = getattr(self, scenario, None)
+                if scenario in testable_scenarios and callable(method):
+                    try:
+                        with io.StringIO() as buf, redirect_stdout(buf):
+                            result = method()
+
+                        if not result:
+                            print("Fail!")
+                            break
+                        print("Pass")
+                    except subprocess.CalledProcessError:
+                        print("Fail!")
+                        break
+                else:
+                    print("INVALID SCENARIO")
+                    break
+        print("---------------------Runner End---------------------")
 
 
 if __name__ == "__main__":
     cshell = CustomShell()
-    cshell.session()
+
+    if len(sys.argv) > 1:
+        cshell.runner(sys.argv[1])
+    else:
+        cshell.session()
