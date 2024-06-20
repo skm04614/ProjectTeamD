@@ -72,8 +72,10 @@ class SSD(ISSD):
               val: str) -> None:
         if not isinstance(lba, int) or not isinstance(val, str):
             raise TypeError("Please check input type. lba:int, val:str")
-        if not 0 <= lba < 100:
+
+        if not SSD.is_lba_valid(lba, 0, 100):
             raise ValueError("LBA is out of range [0, 100).")
+
         if not len(val) == 10 or not val[:2] == "0x":
             raise ValueError("target value must be 10 digits. (ex)0x00001234")
 
@@ -89,11 +91,39 @@ class SSD(ISSD):
         if not isinstance(lba, int):
             raise TypeError("LBA must be an integer.")
 
-        if not 0 <= lba < 100:
+        if not SSD.is_lba_valid(lba, 0, 100):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
             f.write(f"0x{self._data[lba]:08X}")
+
+    def erase(self,
+              start_lba: int,
+              size: int) -> None:
+        if not isinstance(start_lba, int):
+            raise TypeError("LBA must be an integer type.")
+
+        if not isinstance(size, int):
+            raise TypeError("size must be an integer type.")
+
+        if not SSD.is_lba_valid(start_lba, 0, 100):
+            raise ValueError("LBA is out of range [0, 100).")
+
+        if not 0 < size <= 10:
+            raise ValueError("Size is out of range (0, 10].")
+
+        end_lba = start_lba + size - 1
+        if not SSD.is_lba_valid(end_lba, 0, 100):
+            raise ValueError("End LBA (start LBA + size) is out of range [0, 100).")
+
+        for lba in range(start_lba, end_lba + 1):
+            self.write(lba, "0x00000000")
+
+    @staticmethod
+    def is_lba_valid(lba: int,
+                     lower_bound: int,
+                     upper_bound: int) -> bool:
+        return lower_bound <= lba < upper_bound
 
 
 def ssd(*args):
@@ -107,10 +137,14 @@ def ssd(*args):
     lba = int(args[2])
     if op == "R":
         my_ssd.read(lba)
-
-    if op == "W":
+    elif op == 'W':
         val = args[3]
         my_ssd.write(lba, val)
+    elif op == 'E':
+        size = int(args[3])
+        my_ssd.erase(lba, size)
+    else:
+        raise AssertionError(f"user input, '{op}', is not supported.")
 
 
 if __name__ == "__main__":
