@@ -10,8 +10,7 @@ class ICommand(ABC):
                      msg: str) -> None:
             super().__init__(msg)
 
-    _SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
-    _SRC_PATH = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")
+    _SRC_PATH = os.path.join(os.path.dirname(__file__), "../custom_ssd/result.txt")
 
     def __init__(self,
                  *args) -> None:
@@ -31,7 +30,7 @@ class WriteCommand(ICommand):
 
     def execute(self) -> None:
         try:
-            subprocess.run(["python", ICommand._SSD_FILEPATH, "W", str(self._lba), self._val],
+            subprocess.run(["python", "-m", "custom_ssd.cssd", "W", str(self._lba), self._val],
                            check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
@@ -56,7 +55,7 @@ class ReadCommand(ICommand):
 
     def execute(self) -> None:
         try:
-            subprocess.run(["python", ICommand._SSD_FILEPATH, "R", str(self._lba)],
+            subprocess.run(["python", "-m", "custom_ssd.cssd", "R", str(self._lba)],
                            check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
@@ -80,7 +79,7 @@ class EraseSizeCommand(ICommand):
 
     def execute(self) -> None:
         EraseRangeCommand(self._start_lba,
-                          self._start_lba + self._size - 1).execute()
+                          self._start_lba + self._size).execute()
 
 
 class EraseRangeCommand(ICommand):
@@ -93,12 +92,12 @@ class EraseRangeCommand(ICommand):
     def execute(self) -> None:
         slba = self._start_lba
         while slba + 10 < self._end_lba:
-            subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(10)],
+            subprocess.run(["python", "-m", "custom_ssd.cssd", "E", str(slba), str(10)],
                            check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
             slba += 10
 
         if slba < self._end_lba:
-            subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(self._end_lba - slba + 1)],
+            subprocess.run(["python", "-m", "custom_ssd.cssd", "E", str(slba), str(self._end_lba - slba + 1)],
                            check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
 
 

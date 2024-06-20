@@ -4,6 +4,8 @@ import os.path
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+from custom_ssd.command_buffer import CommandBuffer
+
 
 class ISSD(ABC):
     def __init__(self,
@@ -16,6 +18,7 @@ class ISSD(ABC):
 
         self._result_path: str = result_path
         self._prepare_result_path()
+        self._buffer = CommandBuffer()
 
     @property
     def nand_path(self) -> str:
@@ -34,6 +37,16 @@ class ISSD(ABC):
     @abstractmethod
     def read(self,
              lba: int) -> None:
+        pass
+
+    @abstractmethod
+    def erase(self,
+              start_lba: int,
+              size: int) -> None:
+        pass
+
+    @abstractmethod
+    def flush(self):
         pass
 
     def _update_nand(self) -> None:
@@ -95,7 +108,7 @@ class SSD(ISSD):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
-            f.write(f"0x{self._data[lba]:08X}")
+            f.write(f"0x{self.__search(lba):08X}")
 
     def erase(self,
               start_lba: int,
@@ -119,6 +132,24 @@ class SSD(ISSD):
         for lba in range(start_lba, end_lba + 1):
             self.write(lba, "0x00000000")
 
+    def flush(self):
+        for command in self._buffer:
+            cmd_split = command.split(' ')
+            if cmd_split[0] == "W":
+                self.write(int(cmd_split[1]), cmd_split[2])
+            elif cmd_split[0] == "E":
+                self.erase(int(cmd_split[1]), int(cmd_split[2]))
+
+        self._buffer.flush()
+
+    def __search(self,
+                 lba: int):
+        val = self._buffer.search(lba)
+        if val is None:
+            val = self._data[lba]
+
+        return val
+
     @staticmethod
     def is_lba_valid(lba: int,
                      lower_bound: int,
@@ -133,19 +164,25 @@ def ssd(*args):
 
     op = args[1]
     if op == "F":
+        my_ssd.flush()
         return
 
     lba = int(args[2])
     if op == "R":
         my_ssd.read(lba)
+        return
+
     elif op == 'W':
         val = args[3]
         my_ssd.write(lba, val)
+        return
+
     elif op == 'E':
         size = int(args[3])
         my_ssd.erase(lba, size)
-    else:
-        raise AssertionError(f"user input, '{op}', is not supported.")
+        return
+
+    raise AssertionError(f"user input, '{op}', is not supported.")
 
 
 if __name__ == "__main__":

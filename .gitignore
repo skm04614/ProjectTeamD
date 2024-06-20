@@ -2,8 +2,8 @@ __pycache__/
 .idea/
 .venv/
 
-# ssd files
-ssd/**.txt
+# custom_ssd files
+custom_ssd/**.txt
 
 htmlcov/
 
