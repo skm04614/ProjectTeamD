@@ -4,16 +4,23 @@ import subprocess
 
 from contextlib import redirect_stdout
 
+from custom_shell.commands import WriteCommand
+from custom_shell.concrete_commands import SSDWriter
+from custom_shell.invokers import SSDWriterInvoker
+
 
 class CustomShell:
     SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
 
     def __init__(self,
                  src_path: str = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")) -> None:
+        self.ssd_writer = SSDWriter()
+        self.ssd_writer_invoker = SSDWriterInvoker()
         self.__src_path = src_path
 
         with open(os.path.dirname(__file__) + "/help.txt", "r") as file:
             self.__help_content = file.read()
+
 
     def session(self) -> None:
         while True:
@@ -38,11 +45,7 @@ class CustomShell:
     def write(self,
               lba: int,
               val: str) -> None:
-        try:
-            subprocess.run(["python", self.SSD_FILEPATH, "W", str(lba), val],
-                           check=True, text=True, timeout=15, capture_output=True)
-        except subprocess.CalledProcessError:
-            raise
+        self.ssd_writer_invoker.execute_command(WriteCommand(self.ssd_writer, lba, val))
 
     def read(self,
              lba: int) -> None:
