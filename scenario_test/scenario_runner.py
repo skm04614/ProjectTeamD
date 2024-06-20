@@ -1,15 +1,15 @@
 import importlib
 import sys
 
-import scenario
+import scenario_test.scenario
 
 
 def run_scenario(scenario_name):
     try:
-        importlib.reload(sys.modules['scenario'])
-        import scenario
+        importlib.reload(sys.modules['scenario_test.scenario'])
+        import scenario_test.scenario
 
-        scenario_class = getattr(scenario, scenario_name.upper(), None)
+        scenario_class = getattr(scenario_test.scenario, scenario_name.upper(), None)
         if scenario_class is None:
             raise AttributeError("INVALID COMMAND")
 
