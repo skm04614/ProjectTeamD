@@ -126,3 +126,13 @@ class TestCustomShell(TestCase):
             self.__cshell.session()
             result = buf.getvalue().strip().split("\n")
             self.assertEqual("[1] - 0x00000000", result[0])
+
+    @patch("builtins.input", side_effect=["fullwrite 0x123AFE18", "erase_range 94 99", "fullread", "exit"])
+    def test_successful_erase_range(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("[93] - 0x123AFE18", result[93])
+            for idx in range(94, 99):
+                self.assertEqual(f"[{idx}] - 0x00000000", result[idx])
+            self.assertEqual("[99] - 0x123AFE18", result[99])

@@ -98,7 +98,7 @@ class EraseRangeCommand(ICommand):
             slba += 10
 
         if slba < self._end_lba:
-            subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(self._end_lba - slba + 1)],
+            subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(self._end_lba - slba)],
                            check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
 
 
