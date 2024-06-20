@@ -8,6 +8,9 @@ from custom_ssd.command_buffer import CommandBuffer
 
 
 class ISSD(ABC):
+    LBA_LOWER_BOUND = 0
+    LBA_UPPER_BOUND = 0
+
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
@@ -27,6 +30,11 @@ class ISSD(ABC):
     @property
     def result_path(self) -> str:
         return self._result_path
+
+    @classmethod
+    def is_valid_lba(cls,
+                     lba: int) -> bool:
+        return cls.LBA_LOWER_BOUND <= lba <= cls.LBA_UPPER_BOUND
 
     @abstractmethod
     def write(self,
@@ -75,6 +83,9 @@ class ISSD(ABC):
 
 
 class SSD(ISSD):
+    LBA_LOWER_BOUND = 0
+    LBA_UPPER_BOUND = 99
+
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
@@ -86,7 +97,7 @@ class SSD(ISSD):
         if not isinstance(lba, int) or not isinstance(val, str):
             raise TypeError("Please check input type. lba:int, val:str")
 
-        if not SSD.is_lba_valid(lba, 0, 100):
+        if not SSD.is_valid_lba(lba):
             raise ValueError("LBA is out of range [0, 100).")
 
         if not len(val) == 10 or not val[:2] == "0x":
@@ -104,7 +115,7 @@ class SSD(ISSD):
         if not isinstance(lba, int):
             raise TypeError("LBA must be an integer.")
 
-        if not SSD.is_lba_valid(lba, 0, 100):
+        if not SSD.is_valid_lba(lba):
             raise ValueError("LBA is out of range [0, 100).")
 
         with open(self._result_path, "w") as f:
@@ -119,14 +130,14 @@ class SSD(ISSD):
         if not isinstance(size, int):
             raise TypeError("size must be an integer type.")
 
-        if not SSD.is_lba_valid(start_lba, 0, 100):
+        if not SSD.is_valid_lba(start_lba):
             raise ValueError("LBA is out of range [0, 100).")
 
         if not 0 < size <= 10:
             raise ValueError("Size is out of range (0, 10].")
 
         end_lba = start_lba + size - 1
-        if not SSD.is_lba_valid(end_lba, 0, 100):
+        if not SSD.is_valid_lba(end_lba):
             raise ValueError("End LBA (start LBA + size) is out of range [0, 100).")
 
         for lba in range(start_lba, end_lba + 1):
@@ -149,12 +160,6 @@ class SSD(ISSD):
             val = self._data[lba]
 
         return val
-
-    @staticmethod
-    def is_lba_valid(lba: int,
-                     lower_bound: int,
-                     upper_bound: int) -> bool:
-        return lower_bound <= lba < upper_bound
 
 
 def ssd(*args):
