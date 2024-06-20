@@ -2,7 +2,7 @@ import io
 import os
 import subprocess
 
-from unittest import TestCase, skip
+from unittest import TestCase
 from unittest.mock import patch
 from contextlib import redirect_stdout
 from custom_shell.cshell import CustomShell
@@ -20,80 +20,63 @@ class TestCustomShell(TestCase):
     def setUp(self):
         super().setUp()
         self.__cshell = CustomShell()
-        self.__cshell.session()
 
-    @skip
-    @patch("builtins.input", side_effect=["exit"])
-    def tearDown(self):
-        pass
-
-
-    @skip
-    @patch("builtins.input", side_effect=["write 99 0x0x1A2B3C4D", "read 99"])
     def test_successful_write_followed_by_read(self):
-        with io.StringIO() as buf, redirect_stdout(buf):
-            result = buf.getvalue().strip()
-            self.assertEqual(f"[99] - 0x0x1A2B3C4D", result)
+        valid_lbas = (0, 35, 99)
+        valid_vals = ("0x00000000", "0xFFFFFFFF", "0x1A2B3C4D")
+        for lba in valid_lbas:
+            for val in valid_vals:
+                self.__cshell.execute("write", lba, val)
+                with io.StringIO() as buf, redirect_stdout(buf):
+                    self.__cshell.execute("read", lba)
+                    result = buf.getvalue().strip()
+                    self.assertEqual(f"[{lba}] - {val}", result)
 
-    @skip
     def test_out_of_range_lba_read(self):
         invalid_lbas = (-1, 100, 170)
         for lba in invalid_lbas:
             with self.assertRaises(subprocess.CalledProcessError):
-                self.__cshell.read(lba)
+                self.__cshell.execute("read", lba)
 
-    @skip
     def test_out_of_range_lba_write(self):
         invalid_lbas = (-1, 100, 170)
         for lba in invalid_lbas:
             with self.assertRaises(subprocess.CalledProcessError):
-                self.__cshell.write(lba, "0x12345678")
+                self.__cshell.execute("write", lba, "0x12345678")
 
-    @skip
     def test_out_of_range_val_write(self):
         invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
         for val in invalid_vals:
             with self.assertRaises(subprocess.CalledProcessError):
-                self.__cshell.write(0, val)
+                self.__cshell.execute("write", 0, val)
 
-    @skip
-    def test_exit(self):
-        with io.StringIO() as buf, redirect_stdout(buf):
-            exit_code = self.__cshell.exit()
-            result = buf.getvalue().strip()
-            self.assertEqual("Exiting session.", result)
-            self.assertFalse(exit_code)
-
-    @skip
     def test_help(self):
-        with open(os.path.dirname(__file__) + "/../custom_shell/help.txt", "r") as file:
+        with open(os.path.join(os.path.dirname(__file__),
+                               "../custom_shell/help.txt"), "r") as file:
             expected = file.read()
 
         with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.help()
+            self.__cshell.execute("help")
             result = buf.getvalue().strip()
             self.assertEqual(expected, result)
 
-    @skip
     def test_out_of_range_val_fullwrite(self):
         invalid_vals = ("-0x1234", "0x1111222233", "0x000000001")
         for val in invalid_vals:
             with self.assertRaises(subprocess.CalledProcessError):
-                self.__cshell.fullwrite(val)
+                self.__cshell.execute("fullwrite", val)
 
-    @skip
     def test_fullwrite_followed_by_fullread(self):
         val = "0x1A2B3C4D"
 
-        self.__cshell.fullwrite(val)
+        self.__cshell.execute("fullwrite", val)
         with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.fullread()
+            self.__cshell.execute("fullread")
             result = buf.getvalue().strip()
             expected = "\n".join(f"[{lba}] - {val}" for lba in range(0, 100))
 
             self.assertEqual(expected, result)
 
-    @skip
     def test_successful_testapp1(self):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.testapp1()
@@ -105,7 +88,6 @@ class TestCustomShell(TestCase):
 
         self.assertEqual(expected_result, result)
 
-    @skip
     def test_successful_testapp2(self):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.testapp2()
@@ -113,7 +95,6 @@ class TestCustomShell(TestCase):
 
         self.assertEqual("TestApp2 executed successfully.", result)
 
-    @skip
     @patch("builtins.input", side_effect=["write 0 0x12345678", "read 0", "exit"])
     def test_session_write_read_exit(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -122,7 +103,6 @@ class TestCustomShell(TestCase):
             self.assertEqual("[0] - 0x12345678", result[0])
             self.assertEqual("Exiting session.", result[1])
 
-    @skip
     @patch("builtins.input", side_effect=["invalid_command", "exit"])
     def test_session_invalid_command(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
@@ -131,7 +111,6 @@ class TestCustomShell(TestCase):
             self.assertEqual("INVALID COMMAND", result[0])
             self.assertEqual("Exiting session.", result[1])
 
-    @skip
     @patch("builtins.input", side_effect=["write 0", "exit"])
     def test_session_invalid_parameters(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
