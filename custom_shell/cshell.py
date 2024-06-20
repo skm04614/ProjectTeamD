@@ -105,14 +105,14 @@ class CustomShell:
         return True
 
     def runner(self,
-               scenario_list: str) -> None:
-        testable_scenarios = ('testapp1', 'testapp2')
-
-        if not os.path.exists(scenario_list):
+               scenario_path: str) -> None:
+        if not os.path.exists(scenario_path):
             print("Scenario does not exist.")
+            return
 
         print("--------------------Runner Start--------------------")
-        with open(scenario_list, "r") as f:
+        testable_scenarios = ('testapp1', 'testapp2')
+        with open(scenario_path, "r") as f:
             for line in f:
                 scenario = line.strip()
                 print(f"{scenario:<20} --- Run...", end="", flush=True)
