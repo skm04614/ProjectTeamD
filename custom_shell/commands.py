@@ -33,7 +33,7 @@ class WriteCommand(ICommand):
     def execute(self) -> None:
         try:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "W", str(self._lba), self._val],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
 
@@ -58,7 +58,7 @@ class ReadCommand(ICommand):
     def execute(self) -> None:
         try:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "R", str(self._lba)],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
 
@@ -95,12 +95,12 @@ class EraseRangeCommand(ICommand):
         slba = self._start_lba
         while slba + 10 < self._end_lba:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(10)],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
             slba += 10
 
         if slba < self._end_lba:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(self._end_lba - slba + 1)],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
 
 
 class HelpCommand(ICommand):
@@ -117,6 +117,6 @@ class FlushCommand(ICommand):
     def execute(self) -> None:
         try:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "F"],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
