@@ -11,6 +11,9 @@ class ISSD(ABC):
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 0
 
+    VAL_LOWER_BOUND = 0x0
+    VAL_UPPER_BOUND = 0x0
+
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
@@ -32,9 +35,25 @@ class ISSD(ABC):
         return self._result_path
 
     @classmethod
-    def is_valid_lba(cls,
-                     lba: int) -> bool:
-        return cls.LBA_LOWER_BOUND <= lba <= cls.LBA_UPPER_BOUND
+    def check_lba(cls,
+                  lba: int) -> None:
+        if not isinstance(lba, int):
+            raise TypeError("LBA must be an integer typed value.")
+
+        if not cls.LBA_LOWER_BOUND <= lba <= cls.LBA_UPPER_BOUND:
+            raise ValueError(f"LBA is out of range [{cls.LBA_LOWER_BOUND}, {cls.LBA_UPPER_BOUND}].")
+
+    @classmethod
+    def check_val(cls,
+                  val: str) -> None:
+        if not isinstance(val, str):
+            raise TypeError("val must be a string typed value.")
+
+        if not re.match(r"^0x[0-9a-fA-F]{8}$", val):
+            raise ValueError("val must be 10-characters long hex value starting with 0x (e.g. '0x1A2B3C4D').")
+
+        if not cls.VAL_LOWER_BOUND <= int(val, 16) <= cls.VAL_UPPER_BOUND:
+            raise ValueError(f"val is out of range [{cls.VAL_LOWER_BOUND}, {cls.VAL_UPPER_BOUND}].")
 
     @abstractmethod
     def write(self,
@@ -86,6 +105,9 @@ class SSD(ISSD):
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 99
 
+    VAL_LOWER_BOUND = 0x0
+    VAL_UPPER_BOUND = 0xFFFFFFFF
+
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
                  result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
@@ -94,29 +116,15 @@ class SSD(ISSD):
     def write(self,
               lba: int,
               val: str) -> None:
-        if not isinstance(lba, int) or not isinstance(val, str):
-            raise TypeError("Please check input type. lba:int, val:str")
+        SSD.check_lba(lba)
+        SSD.check_val(val)
 
-        if not SSD.is_valid_lba(lba):
-            raise ValueError("LBA is out of range [0, 100).")
-
-        if not len(val) == 10 or not val[:2] == "0x":
-            raise ValueError("target value must be 10 digits. (ex)0x00001234")
-
-        try:
-            self._data[lba] = int(val, 16)
-        except ValueError:
-            raise ValueError("Val must be hex value.")
-        else:
-            self._update_nand()
+        self._data[lba] = int(val, 16)
+        self._update_nand()
 
     def read(self,
              lba: int) -> None:
-        if not isinstance(lba, int):
-            raise TypeError("LBA must be an integer.")
-
-        if not SSD.is_valid_lba(lba):
-            raise ValueError("LBA is out of range [0, 100).")
+        SSD.check_lba(lba)
 
         with open(self._result_path, "w") as f:
             f.write(f"0x{self.__search(lba):08X}")
@@ -124,37 +132,29 @@ class SSD(ISSD):
     def erase(self,
               start_lba: int,
               size: int) -> None:
-        if not isinstance(start_lba, int):
-            raise TypeError("LBA must be an integer type.")
-
-        if not isinstance(size, int):
-            raise TypeError("size must be an integer type.")
-
-        if not SSD.is_valid_lba(start_lba):
-            raise ValueError("LBA is out of range [0, 100).")
+        SSD.check_lba(start_lba)
 
         if not 0 < size <= 10:
             raise ValueError("Size is out of range (0, 10].")
 
         end_lba = start_lba + size - 1
-        if not SSD.is_valid_lba(end_lba):
-            raise ValueError("End LBA (start LBA + size) is out of range [0, 100).")
+        SSD.check_lba(end_lba)
 
         for lba in range(start_lba, end_lba + 1):
             self.write(lba, "0x00000000")
 
     def flush(self):
         for command in self._buffer:
-            cmd_split = command.split(' ')
-            if cmd_split[0] == "W":
-                self.write(int(cmd_split[1]), cmd_split[2])
-            elif cmd_split[0] == "E":
-                self.erase(int(cmd_split[1]), int(cmd_split[2]))
+            args = command.split(" ")
+            if args[0] == "W":
+                self.write(int(args[1]), args[2])
+            elif args[0] == "E":
+                self.erase(int(args[1]), int(args[2]))
 
         self._buffer.flush()
 
     def __search(self,
-                 lba: int):
+                 lba: int) -> int:
         val = self._buffer.search(lba)
         if val is None:
             val = self._data[lba]
