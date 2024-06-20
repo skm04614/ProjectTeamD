@@ -1,6 +1,7 @@
 import io
 import os
 import subprocess
+import sys
 
 from contextlib import redirect_stdout
 
@@ -106,7 +107,14 @@ class CustomShell:
 
         print(f"TestApp2 executed successfully.")
 
+    def runner(self, scenario_list: list) -> None:
+        print(scenario_list)
+
 
 if __name__ == "__main__":
     cshell = CustomShell()
-    cshell.session()
+
+    if len(sys.argv) > 1:
+        cshell.runner(sys.argv[1])
+    else:
+        cshell.session()
