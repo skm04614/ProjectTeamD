@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class Command(ABC):
+class ICommand(ABC):
     @abstractmethod
     def execute(self):
         pass

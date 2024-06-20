@@ -4,17 +4,13 @@ import subprocess
 
 from contextlib import redirect_stdout
 
-from custom_shell.commands import WriteCommand, ReadCommand
-from custom_shell.concrete_commands import SSDWriter, SSDReader
-from custom_shell.invokers import SSDInvoker
+from custom_shell.commands import WriteCommand, ReadCommand, EraseCommand
+from custom_shell.invoker import invoke_command
+
+
 
 class CustomShell:
-
     def __init__(self) -> None:
-
-        self.ssd_writer = SSDWriter()
-        self.ssd_reader = SSDReader()
-        self.ssd_invoker = SSDInvoker()
 
         with open(os.path.dirname(__file__) + "/help.txt", "r") as file:
             self.__help_content = file.read()
@@ -42,11 +38,11 @@ class CustomShell:
     def write(self,
               lba: int,
               val: str) -> None:
-        self.ssd_invoker.execute_command(WriteCommand(self.ssd_writer, lba, val))
+        invoke_command(WriteCommand(lba, val))
 
     def read(self,
              lba: int) -> None:
-        self.ssd_invoker.execute_command(ReadCommand(self.ssd_reader, lba))
+        invoke_command(ReadCommand(lba))
 
     def exit(self) -> None:
         print("Exiting session.")
@@ -71,15 +67,7 @@ class CustomShell:
     def erase_range(self,
                     start_lba: int,
                     end_lba: int) -> None:
-        slba = start_lba
-        while slba + 10 < end_lba:
-            subprocess.run(["python", self.SSD_FILEPATH, "E", str(slba), str(10)],
-                           check=True, text=True, timeout=15, capture_output=True)
-            slba += 10
-
-        if slba < end_lba:
-            subprocess.run(["python", self.SSD_FILEPATH, "E", str(slba), str(end_lba - slba + 1)],
-                           check=True, text=True, timeout=15, capture_output=True)
+        invoke_command(EraseCommand(start_lba, end_lba))
 
     def testapp1(self) -> None:
         test_value = "0x1234ABCD"
