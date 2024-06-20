@@ -1,4 +1,4 @@
-class SSDWriterInvoker:
+class SSDInvoker:
     def __init__(self):
         pass
 

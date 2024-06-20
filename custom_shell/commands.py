@@ -9,3 +9,12 @@ class WriteCommand(Command):
 
     def execute(self):
         self._receiver.write(self._lba, self._value)
+
+
+class ReadCommand(Command):
+    def __init__(self, receiver, lba):
+        self._receiver = receiver
+        self._lba = lba
+
+    def execute(self):
+        self._receiver.read(self._lba)

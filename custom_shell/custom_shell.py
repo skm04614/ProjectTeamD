@@ -4,23 +4,20 @@ import subprocess
 
 from contextlib import redirect_stdout
 
-from custom_shell.commands import WriteCommand
-from custom_shell.concrete_commands import SSDWriter
-from custom_shell.invokers import SSDWriterInvoker
-
+from custom_shell.commands import WriteCommand, ReadCommand
+from custom_shell.concrete_commands import SSDWriter, SSDReader
+from custom_shell.invokers import SSDInvoker
 
 class CustomShell:
-    SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
 
-    def __init__(self,
-                 src_path: str = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")) -> None:
+    def __init__(self) -> None:
+
         self.ssd_writer = SSDWriter()
-        self.ssd_writer_invoker = SSDWriterInvoker()
-        self.__src_path = src_path
+        self.ssd_reader = SSDReader()
+        self.ssd_invoker = SSDInvoker()
 
         with open(os.path.dirname(__file__) + "/help.txt", "r") as file:
             self.__help_content = file.read()
-
 
     def session(self) -> None:
         while True:
@@ -45,18 +42,11 @@ class CustomShell:
     def write(self,
               lba: int,
               val: str) -> None:
-        self.ssd_writer_invoker.execute_command(WriteCommand(self.ssd_writer, lba, val))
+        self.ssd_invoker.execute_command(WriteCommand(self.ssd_writer, lba, val))
 
     def read(self,
              lba: int) -> None:
-        try:
-            subprocess.run(["python", self.SSD_FILEPATH, "R", str(lba)],
-                           check=True, text=True, timeout=15, capture_output=True)
-        except subprocess.CalledProcessError:
-            raise
-
-        with open(self.__src_path, "r") as f:
-            print(f"{[int(lba)]} - {f.readline()}")
+        self.ssd_invoker.execute_command(ReadCommand(self.ssd_reader, lba))
 
     def exit(self) -> None:
         print("Exiting session.")

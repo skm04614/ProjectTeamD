@@ -1,10 +1,11 @@
 import io
 import os
 import subprocess
+import sys
+
 from unittest import TestCase
 from unittest.mock import patch
 from contextlib import redirect_stdout
-
 from custom_shell.custom_shell import CustomShell
 
 
