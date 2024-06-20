@@ -3,8 +3,7 @@ import io
 from abc import ABC, abstractmethod
 from contextlib import redirect_stdout
 
-#from custom_shell import CustomShell
-from cshell import CustomShell
+from custom_shell.cshell import CustomShell
 
 class Scenario(ABC):
     @abstractmethod

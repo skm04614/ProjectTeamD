@@ -1,7 +1,7 @@
 import importlib
 import sys
 
-from scenario import Scenario
+import scenario
 
 
 def run_scenario(scenario_name):

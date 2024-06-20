@@ -12,6 +12,7 @@ class ICommand(ABC):
 
     _SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
     _SRC_PATH = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")
+    _SCENARIO_RUNNER_FILEPATH = os.path.join(os.path.dirname(__file__), "./scenario_runner.py")
 
     def __init__(self,
                  *args) -> None:
@@ -114,6 +115,6 @@ class ScenarioCommand(ICommand):
         self.__scenario = scenario
 
     def execute(self) -> None:
-        result = subprocess.run(['python', 'scenario_runner.py', self.__scenario],
+        result = subprocess.run(['python', self._SCENARIO_RUNNER_FILEPATH, self.__scenario],
                                 check=True, text=True, timeout=15, capture_output=True)
         print(result.stdout.strip())
