@@ -70,6 +70,24 @@ class CustomShell:
         for lba in range(0, 100):
             self.read(lba)
 
+    def erase(self,
+              lba: int,
+              size: int) -> None:
+        self.erase_range(lba, lba + size - 1)
+
+    def erase_range(self,
+                    start_lba: int,
+                    end_lba: int) -> None:
+        slba = start_lba
+        while slba + 10 < end_lba:
+            subprocess.run(["python", self.SSD_FILEPATH, "E", str(slba), str(10)],
+                           check=True, text=True, timeout=15, capture_output=True)
+            slba += 10
+
+        if slba < end_lba:
+            subprocess.run(["python", self.SSD_FILEPATH, "E", str(slba), str(end_lba - slba + 1)],
+                           check=True, text=True, timeout=15, capture_output=True)
+
     def testapp1(self) -> None:
         test_value = "0x1234ABCD"
         expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
