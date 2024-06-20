@@ -120,7 +120,7 @@ class TestCustomShell(TestCase):
             self.assertEqual("Use 'help' to see the manual.", result[1])
             self.assertEqual("Exiting session.", result[2])
 
-    @patch("builtins.input", side_effect=["write 1 0x123AFE18", "write 2 0x123AFE18", "write 2 0x123AFE18",
+    @patch("builtins.input", side_effect=["write 1 0x123AFE18", "write 2 0x123AFE18", "write 3 0x123AFE18",
                                           "erase 2 1", "read 1", "read 2", "read 3", "exit"])
     def test_erase_size_just_one_lba(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
