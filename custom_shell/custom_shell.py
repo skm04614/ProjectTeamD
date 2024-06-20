@@ -110,7 +110,6 @@ class CustomShell:
         print(f"TestApp2 executed successfully.")
         return True
 
-    def runner(self, scenario_list: str) -> None:
     def runner(self,
                scenario_list: str) -> None:
         testable_scenarios = ('testapp1', 'testapp2')
