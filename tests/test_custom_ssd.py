@@ -8,18 +8,12 @@ from custom_ssd.cssd import SSD
 class TestSSD(TestCase):
     def setUp(self):
         super().setUp()
-        nand_path = os.path.join(os.path.dirname(__file__), "test_nand.txt")
-        result_path = os.path.join(os.path.dirname(__file__), "test_result.txt")
-        self.__ssd = SSD(nand_path, result_path)
+        test_nand_path = os.path.join(os.path.dirname(__file__), "test_nand.txt")
+        self.__ssd = SSD(test_nand_path)
 
     def tearDown(self):
         try:
             os.remove(self.__ssd.nand_path)
-        except OSError:
-            pass
-
-        try:
-            os.remove(self.__ssd.result_path)
         except OSError:
             pass
 
@@ -58,12 +52,7 @@ class TestSSD(TestCase):
                 self.__ssd.write(lba, val)
                 self.__ssd.read(lba)
 
-                with open(self.__ssd.result_path, "r") as f:
-                    try:
-                        result = f.readline()
-                    except:
-                        self.fail()
-                self.assertEqual(val, result)
+                self.assertEqual(val, self.__ssd.custom_os.read_from_memory())
 
     def test_out_of_range_lba_read(self):
         out_of_range_lbas = (-100, -3, -1, 100, 111, 145)
@@ -80,9 +69,7 @@ class TestSSD(TestCase):
     def test_read_new_ssd(self):
         for lba in range(0, 100):
             self.__ssd.read(lba)
-            with open(self.__ssd.result_path, "r") as f:
-                result = int(f.readline(), 16)
-                self.assertEqual(0, result)
+            self.assertEqual("0x00000000", self.__ssd.custom_os.read_from_memory())
 
     def test_mismatch_type_erase(self):
         error_typed_values = ("x", None)
@@ -122,5 +109,4 @@ class TestSSD(TestCase):
             end_lba = sum(args) - 1
             for lba in range(start_lba, end_lba + 1):
                 self.__ssd.read(lba)
-                with open(self.__ssd.result_path, "r") as f:
-                    self.assertEqual("0x00000000", f.readline())
+                self.assertEqual("0x00000000", self.__ssd.custom_os.read_from_memory())
