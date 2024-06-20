@@ -4,7 +4,8 @@ import os.path
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
-from ssd.command_buffer import *
+from custom_ssd.command_buffer import CommandBuffer
+
 
 class ISSD(ABC):
     def __init__(self,

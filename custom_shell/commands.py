@@ -10,8 +10,8 @@ class ICommand(ABC):
                      msg: str) -> None:
             super().__init__(msg)
 
-    _SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
-    _SRC_PATH = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")
+    _SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../custom_ssd/ssd.py")
+    _SRC_PATH = os.path.join(os.path.dirname(__file__), "../custom_ssd/result.txt")
 
     def __init__(self,
                  *args) -> None:
