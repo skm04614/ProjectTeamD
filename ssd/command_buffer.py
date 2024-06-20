@@ -1,23 +1,26 @@
-from util import Singleton
+class CommandBuffer:
+    FULL_SIZE = 10
 
-
-class CommandBuffer(metaclass=Singleton):
     def __init__(self):
         self.__buf = []
 
-    def is_full(self) -> bool:
-        return len(self.__buf) == 10
+    @property
+    def get_command_list(self):
+        return self.__buf[:]
 
-    def add(self,
-            cmd: str) -> None:
+    def is_full(self) -> bool:
+        return len(self.__buf) == CommandBuffer.FULL_SIZE
+
+    def add_command(self,
+                    cmd: str) -> None:
         self.__buf.append(cmd)
         self.optimize_buf()
 
     def optimize_buf(self):
         pass
 
-    def get_command_list(self):
-        return self.__buf
-
     def flush_buf(self):
         self.__buf = []
+
+    def search(self, lba):
+        pass
