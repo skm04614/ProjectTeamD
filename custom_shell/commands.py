@@ -3,14 +3,14 @@ import subprocess
 
 from abc import ABC, abstractmethod
 
+from custom_operating_system.cos import CustomOS
+
 
 class ICommand(ABC):
     class UnsupportedException(Exception):
         def __init__(self,
                      msg: str) -> None:
             super().__init__(msg)
-
-    _SRC_PATH = os.path.join(os.path.dirname(__file__), "../custom_ssd/result.txt")
 
     def __init__(self,
                  *args) -> None:
@@ -54,14 +54,10 @@ class ReadCommand(ICommand):
         self._lba = int(args[0])
 
     def execute(self) -> None:
-        try:
-            subprocess.run(["python", "-m", "custom_ssd.cssd", "R", str(self._lba)],
-                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
-        except subprocess.CalledProcessError:
-            raise
+        subprocess.run(["python", "-m", "custom_ssd.cssd", "R", str(self._lba)],
+                       check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
 
-        with open(ICommand._SRC_PATH, "r") as f:
-            print(f"{[int(self._lba)]} - {f.readline()}")
+        print(f"{[int(self._lba)]} - {CustomOS().read_from_memory()}")
 
 
 class FullReadCommand(ICommand):
@@ -114,7 +110,7 @@ class FlushCommand(ICommand):
 
     def execute(self) -> None:
         try:
-            subprocess.run(["python", ICommand._SSD_FILEPATH, "F"],
+            subprocess.run(["python", "-m", "custom_ssd.cssd", "F"],
                            check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise

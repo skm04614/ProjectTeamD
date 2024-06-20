@@ -4,6 +4,7 @@ import os.path
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+from custom_operating_system.cos import CustomOS
 from custom_ssd.command_buffer import CommandBuffer
 
 
@@ -16,23 +17,23 @@ class ISSD(ABC):
 
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
-                 result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
+                 custom_os: CustomOS = CustomOS()) -> None:
+        self._custom_os = custom_os
+
         self._data: OrderedDict[int, int] = OrderedDict()
         self._nand_path: str = nand_path
         self._prepare_nand_path()
         self._prepare_nand_data()
 
-        self._result_path: str = result_path
-        self._prepare_result_path()
         self._buffer = CommandBuffer()
+
+    @property
+    def custom_os(self) -> CustomOS:
+        return self._custom_os
 
     @property
     def nand_path(self) -> str:
         return self._nand_path
-
-    @property
-    def result_path(self) -> str:
-        return self._result_path
 
     @classmethod
     def check_lba(cls,
@@ -93,12 +94,9 @@ class ISSD(ABC):
             return
 
         with open(self._nand_path, "w") as f:
-            for lba in range(0, 100):
+            for lba in range(self.__class__.LBA_LOWER_BOUND,
+                             self.__class__.LBA_UPPER_BOUND + 1):
                 f.write(f"[{lba}] 0x{0:08X}\n")
-
-    def _prepare_result_path(self) -> None:
-        with open(self._result_path, "w") as f:
-            f.write("")
 
 
 class SSD(ISSD):
@@ -110,8 +108,8 @@ class SSD(ISSD):
 
     def __init__(self,
                  nand_path: str = os.path.dirname(__file__) + "/nand.txt",
-                 result_path: str = os.path.dirname(__file__) + "/result.txt") -> None:
-        super().__init__(nand_path, result_path)
+                 custom_os: CustomOS = CustomOS()) -> None:
+        super().__init__(nand_path, custom_os)
 
     def write(self,
               lba: int,
@@ -126,8 +124,7 @@ class SSD(ISSD):
              lba: int) -> None:
         SSD.check_lba(lba)
 
-        with open(self._result_path, "w") as f:
-            f.write(f"0x{self.__search(lba):08X}")
+        self._custom_os.write_to_memory(f"0x{self.__search(lba):08X}")
 
     def erase(self,
               start_lba: int,

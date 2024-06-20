@@ -5,6 +5,9 @@ __pycache__/
 # custom_ssd files
 custom_ssd/**.txt
 
+# custom_os memory files
+custom_operating_system/**.txt
+
 htmlcov/
 
 # log files
