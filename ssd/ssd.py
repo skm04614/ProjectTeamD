@@ -132,8 +132,6 @@ def ssd(*args):
     my_ssd = SSD()
 
     op = args[1]
-    assert op in ("R", "W"), "Only 'R' and 'W' are supported."
-
     lba = int(args[2])
     if op == "R":
         my_ssd.read(lba)
