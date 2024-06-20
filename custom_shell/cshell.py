@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from contextlib import redirect_stdout
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from custom_shell.commands import WriteCommand, ReadCommand, EraseCommand, invoke_command
 
 
