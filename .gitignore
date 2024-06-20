@@ -13,3 +13,6 @@ htmlcov/
 # log files
 custom_logger/**.log
 custom_logger/**.zip
+
+# profile
+**.prof
