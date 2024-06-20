@@ -120,9 +120,22 @@ class TestCustomShell(TestCase):
             self.assertEqual("Use 'help' to see the manual.", result[1])
             self.assertEqual("Exiting session.", result[2])
 
-    @patch("builtins.input", side_effect=["write 1 0x123AFE18", "erase 1 1", "read 1", "exit"])
+    @patch("builtins.input", side_effect=["write 1 0x123AFE18", "write 2 0x123AFE18", "write 3 0x123AFE18",
+                                          "erase 2 1", "read 1", "read 2", "read 3", "exit"])
     def test_erase_size_just_one_lba(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.session()
             result = buf.getvalue().strip().split("\n")
-            self.assertEqual("[1] - 0x00000000", result[0])
+            self.assertEqual("[1] - 0x123AFE18", result[0])
+            self.assertEqual("[2] - 0x00000000", result[1])
+            self.assertEqual("[3] - 0x123AFE18", result[2])
+
+    @patch("builtins.input", side_effect=["fullwrite 0x123AFE18", "erase_range 94 99", "fullread", "exit"])
+    def test_successful_erase_range(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("[93] - 0x123AFE18", result[93])
+            for idx in range(94, 99):
+                self.assertEqual(f"[{idx}] - 0x00000000", result[idx])
+            self.assertEqual("[99] - 0x123AFE18", result[99])
