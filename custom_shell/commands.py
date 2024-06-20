@@ -107,3 +107,16 @@ class HelpCommand(ICommand):
     def execute(self) -> None:
         with open(os.path.join(os.path.dirname(__file__), "help.txt"), "r") as f:
             print(f.read())
+
+
+class FlushCommand(ICommand):
+    def __init__(self,
+                 *args) -> None:
+        super().__init__(args)
+
+    def execute(self) -> None:
+        try:
+            subprocess.run(["python", ICommand._SSD_FILEPATH, "F"],
+                           check=True, text=True, timeout=15, capture_output=True)
+        except subprocess.CalledProcessError:
+            raise

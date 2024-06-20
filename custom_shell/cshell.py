@@ -61,6 +61,9 @@ class CustomShell:
         if operation == "erase_range":
             return EraseRangeCommand(*args)
 
+        if operation == "flush":
+            return FlushCommand(*args)
+
         raise InvalidCommandException(f"Requested operation, '{operation}', is not supported.")
 
     def testapp1(self) -> bool:
