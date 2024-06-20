@@ -63,8 +63,7 @@ class CustomShell:
         if operation == "flush":
             return FlushCommand(*args)
 
-        return ScenarioCommand(operation)
-        # raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
+        return ScenarioCommand(operation, *args)
 
     def runner(self,
                scenario_path: str) -> None:

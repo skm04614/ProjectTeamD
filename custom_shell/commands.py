@@ -1,3 +1,4 @@
+import importlib
 import os
 import subprocess
 
@@ -12,7 +13,6 @@ class ICommand(ABC):
 
     _SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
     _SRC_PATH = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")
-    _SCENARIO_RUNNER_FILEPATH = os.path.join(os.path.dirname(__file__), "../scenario_test/scenario_runner.py")
 
     def __init__(self,
                  *args) -> None:
@@ -121,15 +121,27 @@ class FlushCommand(ICommand):
         except subprocess.CalledProcessError:
             raise
 
-            
+
 class ScenarioCommand(ICommand):
     def __init__(self,
-                 scenario: str):
-        self.__scenario = scenario
+                 operation: str,
+                 *args):
+        if args:
+            raise ICommand.UnsupportedException(f"Requested operation, '{' '.join([operation] + list(args))}', is not supported.")
+        self.__operation = operation
 
     def execute(self) -> None:
-        result = subprocess.run(['python', self._SCENARIO_RUNNER_FILEPATH, self.__scenario],
-                                check=True, text=True, timeout=15, capture_output=True)
-        print(result.stdout.strip())
+        try:
+            import custom_scenario.scenario
+            importlib.reload(custom_scenario.scenario)
+            scenario_class = getattr(custom_scenario.scenario, self.__operation.upper(), None)
+            if scenario_class is None:
+                raise ICommand.UnsupportedException(f"Requested operation, '{self.__operation}', is not supported.")
 
+            scenario_instance = scenario_class()
+            scenario_instance.execute()
 
+        except ICommand.UnsupportedException:
+            print("INVALID COMMAND")
+        except Exception as e:
+            print(f"An error occurred: {e}")

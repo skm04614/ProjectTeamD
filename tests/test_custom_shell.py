@@ -2,7 +2,7 @@ import io
 import os
 import subprocess
 
-from unittest import TestCase, skip
+from unittest import TestCase
 from unittest.mock import patch
 from contextlib import redirect_stdout
 from custom_shell.cshell import CustomShell
@@ -85,7 +85,6 @@ class TestCustomShell(TestCase):
             self.assertEqual("[0] - 0x12345678", result[0])
             self.assertEqual("Exiting session.", result[1])
 
-    @skip
     @patch("builtins.input", side_effect=["invalid_command", "exit"])
     def test_session_invalid_command(self, mock_input):
         with io.StringIO() as buf, redirect_stdout(buf):
