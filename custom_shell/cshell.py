@@ -8,7 +8,7 @@ from custom_shell.commands import *
 class CustomShell:
     def session(self) -> None:
         while True:
-            args = input().split()
+            args = input("==================================================\n>> ").split()
             if not args:
                 continue
 
@@ -26,6 +26,7 @@ class CustomShell:
                 print("Use 'help' to see the manual.")
             except subprocess.CalledProcessError as e:
                 print(e.stderr)
+
 
     def execute(self,
                 *args) -> None:
@@ -58,6 +59,9 @@ class CustomShell:
 
         if operation == "erase_range":
             return EraseRangeCommand(*args)
+          
+        if operation == "flush":
+            return FlushCommand(*args)
 
         return ScenarioCommand(operation)
         # raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")

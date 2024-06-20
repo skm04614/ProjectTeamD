@@ -102,3 +102,10 @@ class TestCustomShell(TestCase):
             self.assertEqual("INVALID SET OF PARAMETERS PROVIDED FOR 'write'.", result[0])
             self.assertEqual("Use 'help' to see the manual.", result[1])
             self.assertEqual("Exiting session.", result[2])
+
+    @patch("builtins.input", side_effect=["write 1 0x123AFE18", "erase 1 1", "read 1", "exit"])
+    def test_erase_size_just_one_lba(self, mock_input):
+        with io.StringIO() as buf, redirect_stdout(buf):
+            self.__cshell.session()
+            result = buf.getvalue().strip().split("\n")
+            self.assertEqual("[1] - 0x00000000", result[0])

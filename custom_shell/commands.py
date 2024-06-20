@@ -33,7 +33,7 @@ class WriteCommand(ICommand):
     def execute(self) -> None:
         try:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "W", str(self._lba), self._val],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
 
@@ -58,7 +58,7 @@ class ReadCommand(ICommand):
     def execute(self) -> None:
         try:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "R", str(self._lba)],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
         except subprocess.CalledProcessError:
             raise
 
@@ -81,7 +81,7 @@ class EraseSizeCommand(ICommand):
 
     def execute(self) -> None:
         EraseRangeCommand(self._start_lba,
-                          self._start_lba + self._size - 1).execute()
+                          self._start_lba + self._size).execute()
 
 
 class EraseRangeCommand(ICommand):
@@ -95,12 +95,12 @@ class EraseRangeCommand(ICommand):
         slba = self._start_lba
         while slba + 10 < self._end_lba:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(10)],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
             slba += 10
 
         if slba < self._end_lba:
             subprocess.run(["python", ICommand._SSD_FILEPATH, "E", str(slba), str(self._end_lba - slba + 1)],
-                           check=True, text=True, timeout=15, capture_output=True)
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
 
 
 class HelpCommand(ICommand):
@@ -109,6 +109,19 @@ class HelpCommand(ICommand):
             print(f.read())
 
 
+class FlushCommand(ICommand):
+    def __init__(self,
+                 *args) -> None:
+        super().__init__(args)
+
+    def execute(self) -> None:
+        try:
+            subprocess.run(["python", ICommand._SSD_FILEPATH, "F"],
+                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
+        except subprocess.CalledProcessError:
+            raise
+
+            
 class ScenarioCommand(ICommand):
     def __init__(self,
                  scenario: str):
@@ -118,3 +131,5 @@ class ScenarioCommand(ICommand):
         result = subprocess.run(['python', self._SCENARIO_RUNNER_FILEPATH, self.__scenario],
                                 check=True, text=True, timeout=15, capture_output=True)
         print(result.stdout.strip())
+
+
