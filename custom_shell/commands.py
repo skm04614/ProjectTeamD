@@ -106,3 +106,14 @@ class HelpCommand(ICommand):
     def execute(self) -> None:
         with open(os.path.join(os.path.dirname(__file__), "help.txt"), "r") as f:
             print(f.read())
+
+
+class ScenarioCommand(ICommand):
+    def __init__(self,
+                 scenario: str):
+        self.__scenario = scenario
+
+    def execute(self) -> None:
+        result = subprocess.run(['python', 'scenario_runner.py', self.__scenario],
+                                check=True, text=True, timeout=15, capture_output=True)
+        print(result.stdout.strip())

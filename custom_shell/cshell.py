@@ -17,21 +17,15 @@ class CustomShell:
                 print("Exiting session.")
                 return
 
-            # TODO: refactor out testapp1 and testapp2
-            if operation == "testapp1":
-                self.testapp1()
-            elif operation == "testapp2":
-                self.testapp2()
-            else:
-                try:
-                    self.execute(*args)
-                except ICommand.UnsupportedException:
-                    print("INVALID COMMAND")
-                except (TypeError, IndexError):
-                    print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
-                    print("Use 'help' to see the manual.")
-                except subprocess.CalledProcessError as e:
-                    print(e.stderr)
+            try:
+                self.execute(*args)
+            except ICommand.UnsupportedException:
+                print("INVALID COMMAND")
+            except (TypeError, IndexError):
+                print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
+                print("Use 'help' to see the manual.")
+            except subprocess.CalledProcessError as e:
+                print(e.stderr)
 
     def execute(self,
                 *args) -> None:
@@ -65,48 +59,8 @@ class CustomShell:
         if operation == "erase_range":
             return EraseRangeCommand(*args)
 
-        raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
-
-    def testapp1(self) -> bool:
-        test_value = "0x1234ABCD"
-        expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
-
-        self.execute("fullwrite", test_value)
-        with io.StringIO() as buf, redirect_stdout(buf):
-            self.execute("fullread")
-            result = buf.getvalue().strip()
-        print(result)
-        print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
-
-        return expected_result == result
-
-    def testapp2(self) -> bool:
-        lower_lba = 0
-        upper_lba = 5
-
-        val = "0xAAAABBBB"
-        for _ in range(30):
-            for lba in range(lower_lba, upper_lba + 1):
-                self.execute("write", lba, val)
-
-        val = "0x12345678"
-        for lba in range(lower_lba, upper_lba + 1):
-            self.execute("write", lba, val)
-
-        for lba in range(lower_lba, upper_lba + 1):
-            with io.StringIO() as buf, redirect_stdout(buf):
-                self.execute("read", lba)
-
-                result = buf.getvalue().strip()
-                expected = f"[{lba}] - {val}"
-                if result != expected:
-                    print(f"TestApp2 failed at LBA[{lba}]")
-                    print(f"Expected={expected}")
-                    print(f"Actual={result}")
-                    return False
-
-        print(f"TestApp2 executed successfully.")
-        return True
+        return ScenarioCommand(operation)
+        # raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
 
     def runner(self,
                scenario_path: str) -> None:
