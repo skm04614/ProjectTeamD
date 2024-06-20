@@ -4,13 +4,12 @@ import subprocess
 from abc import ABC, abstractmethod
 
 
-class InvalidCommandException(Exception):
-    def __init__(self,
-                 msg: str) -> None:
-        super().__init__(msg)
-
-
 class ICommand(ABC):
+    class UnsupportedException(Exception):
+        def __init__(self,
+                     msg: str) -> None:
+            super().__init__(msg)
+
     _SSD_FILEPATH = os.path.join(os.path.dirname(__file__), "../ssd/ssd.py")
     _SRC_PATH = os.path.join(os.path.dirname(__file__), "../ssd/result.txt")
 

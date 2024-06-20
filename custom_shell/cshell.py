@@ -8,7 +8,7 @@ from custom_shell.commands import *
 class CustomShell:
     def session(self) -> None:
         while True:
-            args = input().split()
+            args = input("==================================================\n>> ").split()
             if not args:
                 continue
 
@@ -24,22 +24,26 @@ class CustomShell:
                 self.testapp2()
             else:
                 try:
-                    CustomShell.invoke_command(CustomShell.command_factory(*args))
-                except InvalidCommandException:
+                    self.execute(*args)
+                except ICommand.UnsupportedException:
                     print("INVALID COMMAND")
-                except TypeError:
+                except (TypeError, IndexError):
                     print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
                     print("Use 'help' to see the manual.")
                 except subprocess.CalledProcessError as e:
                     print(e.stderr)
 
+    def execute(self,
+                *args) -> None:
+        CustomShell._invoke_command(CustomShell._command_factory(*args))
+
     @staticmethod
-    def invoke_command(command: ICommand) -> None:
+    def _invoke_command(command: ICommand) -> None:
         command.execute()
 
     @staticmethod
-    def command_factory(operation: str,
-                        *args) -> ICommand:
+    def _command_factory(operation: str,
+                         *args) -> ICommand:
         if operation == "read":
             return ReadCommand(*args)
 
@@ -64,15 +68,15 @@ class CustomShell:
         if operation == "flush":
             return FlushCommand(*args)
 
-        raise InvalidCommandException(f"Requested operation, '{operation}', is not supported.")
+        raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
 
     def testapp1(self) -> bool:
         test_value = "0x1234ABCD"
         expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
 
-        CustomShell.invoke_command(CustomShell.command_factory("fullwrite", test_value))
+        self.execute("fullwrite", test_value)
         with io.StringIO() as buf, redirect_stdout(buf):
-            CustomShell.invoke_command(CustomShell.command_factory("fullread"))
+            self.execute("fullread")
             result = buf.getvalue().strip()
         print(result)
         print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
@@ -86,15 +90,15 @@ class CustomShell:
         val = "0xAAAABBBB"
         for _ in range(30):
             for lba in range(lower_lba, upper_lba + 1):
-                CustomShell.invoke_command(CustomShell.command_factory("write", lba, val))
+                self.execute("write", lba, val)
 
         val = "0x12345678"
         for lba in range(lower_lba, upper_lba + 1):
-            CustomShell.invoke_command(CustomShell.command_factory("write", lba, val))
+            self.execute("write", lba, val)
 
         for lba in range(lower_lba, upper_lba + 1):
             with io.StringIO() as buf, redirect_stdout(buf):
-                CustomShell.invoke_command(CustomShell.command_factory("read", lba))
+                self.execute("read", lba)
 
                 result = buf.getvalue().strip()
                 expected = f"[{lba}] - {val}"
