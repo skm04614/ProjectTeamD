@@ -10,16 +10,18 @@ from custom_ssd.command import *
 class TestSSD(TestCase):
     def setUp(self):
         super().setUp()
-        test_nand_path = os.path.join(os.path.dirname(__file__), "test_nand.txt")
-        self.__ssd = SSD(test_nand_path)
+
+        self.__test_nand_path = os.path.join(os.path.dirname(__file__), "test_nand.txt")
+        self.__test_buffer_path = os.path.join(os.path.dirname(__file__), "test_buffer.txt")
+        self.__ssd = SSD(self.__test_nand_path,
+                         self.__test_buffer_path)
 
         self._valid_lbas = tuple(int(lba) for lba in np.linspace(self.__ssd.LBA_LOWER_BOUND,
                                                                  self.__ssd.LBA_UPPER_BOUND,
                                                                  7))
 
-        self._valid_vals = tuple(f"0x{int(val):08X}" for val in np.linspace(self.__ssd.VAL_LOWER_BOUND,
-                                                                            self.__ssd.VAL_UPPER_BOUND,
-                                                                            7))
+        self._valid_vals = ("0x00000000", "0x12345678", "0x33334444", "0x98765432",
+                            "0xA1B2C3D4", "0xAFBECDAF", "0xFFFFFFFF")
 
         self._invalid_lbas = (-100, -1, 100, 150)
         self._wrong_typed_lbas = ([], None, "1b", "a1")
@@ -27,10 +29,11 @@ class TestSSD(TestCase):
         self._wrong_typed_vals = ([], None, 0xFFFFFFFF, 0x0)
 
     def tearDown(self):
-        try:
-            os.remove(self.__ssd.nand_path)
-        except OSError:
-            pass
+        for test_path in (self.__test_buffer_path, self.__test_nand_path):
+            try:
+                os.remove(test_path)
+            except OSError:
+                pass
 
     def test_invalid_lba_write(self):
         for lba in self._invalid_lbas:

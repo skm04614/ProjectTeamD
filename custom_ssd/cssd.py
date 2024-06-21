@@ -1,9 +1,7 @@
 import re
 import sys
 import os.path
-from typing import Any
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 
 from custom_operating_system.cos import CustomOS
 from custom_ssd.command import *
@@ -14,22 +12,22 @@ class ISSD(ABC):
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 0
 
-    VAL_LOWER_BOUND = 0x0
-    VAL_UPPER_BOUND = 0x0
-
     MIN_ERASE_SIZE = 1
     MAX_ERASE_SIZE = 1
 
+    NULL = "0x00000000"
+
     def __init__(self,
-                 nand_path: str = os.path.dirname(__file__) + "/nand.txt",
+                 nand_path: str,
+                 buffer_path: str,
                  custom_os: CustomOS = CustomOS()) -> None:
         self._custom_os = custom_os
 
-        self._nand_data: OrderedDict[int, int] = OrderedDict()
+        self._nand_data: list[str] = []
         self._nand_path: str = nand_path
         self._prepare_nand()
 
-        self._command_buffer = CommandBuffer()
+        self._command_buffer = CommandBuffer(self, buffer_path)
 
     @property
     def custom_os(self) -> CustomOS:
@@ -53,9 +51,9 @@ class ISSD(ABC):
 
         raise AssertionError(f"user input, '{operation}', is not supported.")
 
-    def add_command(self,
-                    command: ICommand) -> None:
-        self._command_buffer.add_command(command)
+    def queue_command(self,
+                      command: ICommand) -> None:
+        self._command_buffer.push(command)
 
     @classmethod
     def check_lba(cls,
@@ -79,9 +77,6 @@ class ISSD(ABC):
         if not re.match(r"^0x[0-9a-fA-F]{8}$", val):
             raise ValueError("val must be 10-characters long hex value starting with 0x (e.g. '0x1A2B3C4D').")
 
-        if not cls.VAL_LOWER_BOUND <= int(val, 16) <= cls.VAL_UPPER_BOUND:
-            raise ValueError(f"val is out of range [{cls.VAL_LOWER_BOUND}, {cls.VAL_UPPER_BOUND}].")
-
     @classmethod
     def check_erase_size(cls,
                          size: Any) -> None:
@@ -101,47 +96,48 @@ class ISSD(ABC):
                          val: str) -> None:
         self.check_lba(lba)
         self.check_val(val)
-        self._nand_data[lba] = int(val, 16)
+        self._nand_data[lba] = val
 
     def flush_nand_data_to_path(self) -> None:
         with open(self._nand_path, "w") as f:
-            f.writelines(f"[{lba}] 0x{val:08X}\n" for lba, val in self._nand_data.items())
+            f.writelines(f"{val}\n" for val in self._nand_data)
 
     def _prepare_nand(self) -> None:
         if not os.path.exists(self._nand_path):
             with open(self._nand_path, "w") as f:
-                f.writelines(f"[{lba}] 0x{0:08X}\n" for lba in range(self.__class__.LBA_LOWER_BOUND,
-                                                                     self.__class__.LBA_UPPER_BOUND + 1))
+                f.writelines(f"{self.NULL}\n" for _ in range(self.LBA_LOWER_BOUND,
+                                                             self.LBA_UPPER_BOUND + 1))
 
-        pattern = re.compile(r"\[(?P<lba>\d+)]\s+(?P<val>0x[0-9a-fA-F]+)")
         with open(self._nand_path, "r") as f:
-            for line in f:
-                m = pattern.match(line)
-                self._nand_data[int(m["lba"])] = int(m["val"], 16)
+            self._nand_data = [line.strip() for line in f]
 
 
 class SSD(ISSD):
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 99
 
-    VAL_LOWER_BOUND = 0x0
-    VAL_UPPER_BOUND = 0xFFFFFFFF
-
     MIN_ERASE_SIZE = 1
     MAX_ERASE_SIZE = 10
 
     def __init__(self,
-                 nand_path: str = os.path.dirname(__file__) + "/nand.txt",
+                 nand_path: str = os.path.join(os.path.dirname(__file__), "nand.txt"),
+                 buffer_path: str = os.path.join(os.path.dirname(__file__), "buffer.txt"),
                  custom_os: CustomOS = CustomOS()) -> None:
-        super().__init__(nand_path, custom_os)
+        super().__init__(nand_path, buffer_path, custom_os)
 
     def search(self,
-               lba: int) -> int:
-        val = self._command_buffer.search(lba)
-        if val is None:
-            val = self._nand_data[lba]
+               lba: int) -> str:
+        for command in self._command_buffer:
+            if not command.start_lba <= lba <= command.end_lba:
+                continue
 
-        return val
+            if isinstance(command, WriteCommand):
+                return command.val
+
+            if isinstance(command, EraseCommand):
+                return self.NULL
+
+        return self._nand_data[lba]
 
 
 def ssd(*args):

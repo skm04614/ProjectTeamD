@@ -27,9 +27,8 @@ class TestCustomShell(TestCase):
                                                                  SSD.LBA_UPPER_BOUND,
                                                                  7))
 
-        self._valid_vals = tuple(f"0x{int(val):08X}" for val in np.linspace(SSD.VAL_LOWER_BOUND,
-                                                                            SSD.VAL_UPPER_BOUND,
-                                                                            7))
+        self._valid_vals = ("0x00000000", "0x12345678", "0x33334444", "0x98765432",
+                            "0xA1B2C3D4", "0xAFBECDAF", "0xFFFFFFFF")
 
         self._invalid_lbas = (-100, -1, 100, 150)
         self._wrong_typed_lbas = ([], None, "0", "1b", "a1")
