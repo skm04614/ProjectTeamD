@@ -1,18 +1,17 @@
 __pycache__/
 .idea/
 .venv/
-
-# custom_ssd files
-custom_ssd/**.txt
-
-# custom_os memory files
-custom_operating_system/**.txt
-
 htmlcov/
 
 # log files
-custom_logger/**.log
-custom_logger/**.zip
+*/**.log
+*/**.zip
+
+# ssd related files
+*/**.txt
 
 # profile
 **.prof
+
+# test list files
+**.list

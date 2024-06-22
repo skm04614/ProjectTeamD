@@ -41,4 +41,4 @@ class CustomOS(IOS):
     def read_from_memory(self) -> str:
         with (self._memory_lock,
               open(CustomOS.MEMORY_PATH, "r") as f):
-            return f.read()
+            return f.read().strip()

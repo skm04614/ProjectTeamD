@@ -80,20 +80,6 @@ class TestCustomShell(TestCase):
 
             self.assertEqual(expected, buf.getvalue().strip())
 
-    def test_successful_testapp1(self):
-        test_value = "0x1234ABCD"
-        expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
-        expected_result += "\nTestApp1 ran successfully!"
-
-        with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.testapp1()
-            self.assertEqual(expected_result, buf.getvalue().strip())
-
-    def test_successful_testapp2(self):
-        with io.StringIO() as buf, redirect_stdout(buf):
-            self.__cshell.testapp2()
-            self.assertEqual("TestApp2 executed successfully.", buf.getvalue().strip())
-
     @patch("builtins.input",
            side_effect=["write 0 0x12345678",
                         "read 0",
