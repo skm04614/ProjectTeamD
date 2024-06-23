@@ -29,7 +29,7 @@ class CustomOS(IOS):
         super().__init__()
 
         if not os.path.exists(CustomOS.MEMORY_PATH):
-            with open(CustomOS.MEMORY_PATH, "w") as f:
+            with open(CustomOS.MEMORY_PATH, "w"):
                 pass
 
     def write_to_memory(self,
