@@ -28,7 +28,7 @@ class CommandBuffer:
         return self.__commands[index]
 
     def is_full(self) -> bool:
-        return len(self.__commands) >= CommandBuffer.MAX_SIZE
+        return len(self) >= CommandBuffer.MAX_SIZE
 
     def push(self,
              new_command: ICommand) -> None:
@@ -37,7 +37,7 @@ class CommandBuffer:
             self.flush()
 
     def flush(self) -> None:
-        for command in self.__commands:
+        for command in self:
             command.execute()
 
         self.__commands = []
