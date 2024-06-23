@@ -1,5 +1,7 @@
+import os
 import re
 import sys
+import subprocess
 
 import testing_suite
 from custom_shell.command import *

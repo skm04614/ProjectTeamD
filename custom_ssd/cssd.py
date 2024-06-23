@@ -1,7 +1,8 @@
 import re
 import sys
 import os.path
-from abc import ABC, abstractmethod
+from abc import ABC
+from typing import Any
 
 from custom_operating_system.cos import CustomOS
 from custom_ssd.command import *
