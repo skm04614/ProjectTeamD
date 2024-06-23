@@ -1,5 +1,6 @@
 import re
 import glob
+import inspect
 import os.path
 import threading
 from datetime import datetime
@@ -35,50 +36,47 @@ class Logger(metaclass=Singleton):
             self.__log_level = log_level
 
     def debug(self,
-              caller_function_name: str,
               msg: str) -> None:
         if self.__log_level > Logger.DEBUG:
             return
 
-        self.__log("DBG", caller_function_name, msg)
+        self.__log("DBG", msg)
 
     def info(self,
-             caller_function_name: str,
              msg: str) -> None:
         if self.__log_level > Logger.INFO:
             return
 
-        self.__log("INFO", caller_function_name, msg)
+        self.__log("INFO", msg)
 
     def warn(self,
-             caller_function_name: str,
              msg: str) -> None:
         if self.__log_level > Logger.WARNING:
             return
 
-        self.__log("WARN", caller_function_name, msg)
+        self.__log("WARN", msg)
 
     def error(self,
-              caller_function_name: str,
               msg: str) -> None:
         if self.__log_level > Logger.ERROR:
             return
 
-        self.__log("ERR", caller_function_name, msg)
+        self.__log("ERR", msg)
 
     def critical(self,
-                 caller_function_name: str,
                  msg: str) -> None:
         if self.__log_level > Logger.CRITICAL:
             return
 
-        self.__log("CRIT", caller_function_name, msg)
+        self.__log("CRIT", msg)
 
     def __log(self,
               log_level_str: str,
-              caller_function_name: str,
               msg: str) -> None:
         self.__flush_log_if_exceeds_maximum_size()
+
+        frame = inspect.currentframe().f_back.f_back
+        caller_function_name = frame.f_code.co_name
 
         with (self.__log_lock,
               open(self.__log_file, "a") as f):
