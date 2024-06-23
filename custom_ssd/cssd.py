@@ -59,6 +59,20 @@ class ISSD(ABC):
                       command: ICommand) -> None:
         self._command_buffer.push(command)
 
+    def search(self,
+               lba: int) -> str:
+        for command in self._command_buffer:
+            if not command.start_lba <= lba <= command.end_lba:
+                continue
+
+            if isinstance(command, WriteCommand):
+                return command.val
+
+            if isinstance(command, EraseCommand):
+                return self.NULL
+
+        return self._nand_data[lba]
+
     @classmethod
     def check_lba(cls,
                   lba: Any) -> None:
@@ -128,20 +142,6 @@ class SSD(ISSD):
                  buffer_path: str,
                  custom_os: CustomOS = CustomOS()) -> None:
         super().__init__(nand_path, buffer_path, custom_os)
-
-    def search(self,
-               lba: int) -> str:
-        for command in self._command_buffer:
-            if not command.start_lba <= lba <= command.end_lba:
-                continue
-
-            if isinstance(command, WriteCommand):
-                return command.val
-
-            if isinstance(command, EraseCommand):
-                return self.NULL
-
-        return self._nand_data[lba]
 
 
 def ssd(*args):
