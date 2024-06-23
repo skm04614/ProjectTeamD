@@ -1,6 +1,12 @@
-from typing import Any
+from __future__ import annotations
 
+from typing import Any
 from abc import ABC, abstractmethod
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from custom_ssd.cssd import ISSD
 
 
 class ICommand(ABC):
@@ -10,7 +16,7 @@ class ICommand(ABC):
             super().__init__(msg)
 
     def __init__(self,
-                 ssd: "custom_ssd.cssd.SSD",
+                 ssd: ISSD,
                  start_lba: Any,
                  end_lba: Any) -> None:
         self._start_lba: int = 0
@@ -70,7 +76,7 @@ class ICommand(ABC):
 
 class WriteCommand(ICommand):
     def __init__(self,
-                 ssd: "custom_ssd.cssd.SSD",
+                 ssd: ISSD,
                  lba: Any,
                  val: Any) -> None:
         ssd.check_val(val)
@@ -93,7 +99,7 @@ class WriteCommand(ICommand):
 
 class ReadCommand(ICommand):
     def __init__(self,
-                 ssd: "custom_ssd.cssd.SSD",
+                 ssd: ISSD,
                  lba: Any) -> None:
         super().__init__(ssd, lba, lba)
 
@@ -106,7 +112,7 @@ class ReadCommand(ICommand):
 
 class EraseCommand(ICommand):
     def __init__(self,
-                 ssd: "custom_ssd.cssd.SSD",
+                 ssd: ISSD,
                  lba: Any,
                  size: Any) -> None:
         ssd.check_lba(lba)
@@ -134,7 +140,7 @@ class EraseCommand(ICommand):
 
 class FlushCommand(ICommand):
     def __init__(self,
-                 ssd: "custom_ssd.cssd.SSD") -> None:
+                 ssd: ISSD) -> None:
         super().__init__(ssd, ssd.LBA_LOWER_BOUND, ssd.LBA_UPPER_BOUND)
 
     def __str__(self) -> str:

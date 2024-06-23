@@ -1,15 +1,22 @@
+from __future__ import annotations
+
 import copy
 import os
 from typing import Iterable
 
 from custom_ssd.command import *
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from custom_ssd.cssd import ISSD
+
 
 class CommandBuffer:
     MAX_SIZE = 10
 
     def __init__(self,
-                 master_ssd: "custom_ssd.cssd.SSD",
+                 master_ssd: ISSD,
                  buffer_path: str) -> None:
         self._master_ssd = master_ssd
 
