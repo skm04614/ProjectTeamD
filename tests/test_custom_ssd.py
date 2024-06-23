@@ -4,7 +4,6 @@ import numpy as np
 from unittest import TestCase
 
 from custom_ssd.cssd import SSD
-from custom_ssd.command import *
 
 
 class TestSSD(TestCase):

@@ -1,21 +1,19 @@
-from custom_ssd.cssd import SSD
+from custom_ssd.cssd import TARGET_SSD
 from random import randint
 
 
 def tc_single_random_lba_val_write_compare() -> bool:
-    ssd = SSD()
-
     target_val = f"0x{randint(0, 0xFFFFFFFF):08X}"
-    target_lba = randint(ssd.LBA_LOWER_BOUND, ssd.LBA_UPPER_BOUND)
+    target_lba = randint(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND)
 
     try:
-        command = ssd.command_factory("W", target_lba, target_val)
-        ssd.queue_command(command)
+        command = TARGET_SSD.command_factory("W", target_lba, target_val)
+        TARGET_SSD.queue_command(command)
 
-        command = ssd.command_factory("R", target_lba)
-        ssd.queue_command(command)
+        command = TARGET_SSD.command_factory("R", target_lba)
+        TARGET_SSD.queue_command(command)
 
-        assert ssd.custom_os.read_from_memory() == target_val
+        assert TARGET_SSD.custom_os.read_from_memory() == target_val
     except:
         return False
     else:

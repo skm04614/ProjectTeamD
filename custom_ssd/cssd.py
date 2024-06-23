@@ -124,8 +124,8 @@ class SSD(ISSD):
     MAX_ERASE_SIZE = 10
 
     def __init__(self,
-                 nand_path: str = os.path.join(os.path.dirname(__file__), "nand.txt"),
-                 buffer_path: str = os.path.join(os.path.dirname(__file__), "buffer.txt"),
+                 nand_path: str,
+                 buffer_path: str,
                  custom_os: CustomOS = CustomOS()) -> None:
         super().__init__(nand_path, buffer_path, custom_os)
 
@@ -147,10 +147,12 @@ class SSD(ISSD):
 def ssd(*args):
     assert len(args) > 1, "Command line argument must be provided."
 
-    my_ssd = SSD()  # TODO fix, it is being used as if it's a singleton
-    command = my_ssd.command_factory(*args[1:])
-    my_ssd.queue_command(command)
+    command = TARGET_SSD.command_factory(*args[1:])
+    TARGET_SSD.queue_command(command)
 
+
+TARGET_SSD = SSD(nand_path=os.path.join(os.path.dirname(__file__), "nand.txt"),
+                 buffer_path=os.path.join(os.path.dirname(__file__), "buffer.txt"))
 
 if __name__ == "__main__":
     ssd(*sys.argv)
