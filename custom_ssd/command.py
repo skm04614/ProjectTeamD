@@ -51,24 +51,6 @@ class ICommand(ABC):
         self._start_lba = int(start_lba)
         self._end_lba = int(end_lba)
 
-    def is_consecutive(self,
-                       other: "ICommand") -> bool:
-        if not isinstance(other, self.__class__):
-            return False
-
-        return (self.start_lba == other.end_lba + 1
-                or other.start_lba == self.end_lba + 1)
-
-    def overlaps(self,
-                 other: "ICommand") -> bool:
-        if not isinstance(other, ICommand):
-            return False
-
-        return (other.start_lba in range(self.start_lba, self.end_lba + 1)
-                or other.end_lba in range(self.start_lba, self.end_lba + 1)
-                or self.start_lba in range(other.start_lba, other.end_lba + 1)
-                or self.end_lba in range(other.start_lba, other.end_lba + 1))
-
     def __check_valid_lba_range(self) -> None:
         if self._start_lba > self._end_lba:
             raise ICommand.InvalidLBARangeException("start_lba <= end_lba is required.")
