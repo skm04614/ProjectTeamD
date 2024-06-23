@@ -108,9 +108,8 @@ class TestCustomShell(TestCase):
         with io.StringIO() as buf, redirect_stdout(buf):
             self.__cshell.session()
             result = buf.getvalue().strip().split("\n")
-            self.assertEqual("INVALID SET OF PARAMETERS PROVIDED FOR 'write'.", result[0])
-            self.assertEqual("Use 'help' to see the manual.", result[1])
-            self.assertEqual("Exiting session.", result[2])
+            self.assertEqual("Use 'help' to see the manual.", result[-2])
+            self.assertEqual("Exiting session.", result[-1])
 
     @patch("builtins.input",
            side_effect=["write 1 0x123AFE18",
@@ -139,6 +138,6 @@ class TestCustomShell(TestCase):
             self.__cshell.session()
             result = buf.getvalue().strip().split("\n")
             self.assertEqual("[93] - 0x123AFE18", result[93])
-            for idx in range(94, 99):
-                self.assertEqual(f"[{idx}] - 0x00000000", result[idx])
+            for lba in range(94, 99):
+                self.assertEqual(f"[{lba}] - 0x00000000", result[lba])
             self.assertEqual("[99] - 0x123AFE18", result[99])

@@ -1,5 +1,6 @@
 import os
 import subprocess
+from typing import Any
 
 from abc import ABC, abstractmethod
 
@@ -12,52 +13,52 @@ class ICommand(ABC):
                      msg: str) -> None:
             super().__init__(msg)
 
-    def __init__(self,
-                 *args) -> None:
-        self._args = args
-
     @abstractmethod
     def execute(self) -> None:
         pass
 
+    @staticmethod
+    def _send_ssd_command(op: str,
+                          *args) -> None:
+        subprocess.run(f"python -m custom_ssd.cssd {op} {' '.join(str(arg) for arg in args)}",
+                       shell=True, check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
+
 
 class WriteCommand(ICommand):
     def __init__(self,
-                 *args) -> None:
-        super().__init__(args)
-        self._lba = int(args[0])
-        self._val = str(args[1])
+                 lba: Any,
+                 val: Any) -> None:
+        super().__init__()
+
+        self.__lba = lba
+        self.__val = val
 
     def execute(self) -> None:
-        try:
-            subprocess.run(["python", "-m", "custom_ssd.cssd", "W", str(self._lba), self._val],
-                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
-        except subprocess.CalledProcessError:
-            raise
+        ICommand._send_ssd_command("W", self.__lba, self.__val)
 
 
 class FullWriteCommand(ICommand):
     def __init__(self,
-                 *args) -> None:
-        super().__init__(args)
-        self._val = str(args[0])
+                 val: Any) -> None:
+        super().__init__()
+
+        self.__val = val
 
     def execute(self) -> None:
         for lba in range(0, 100):
-            WriteCommand(lba, self._val).execute()
+            WriteCommand(lba, self.__val).execute()
 
 
 class ReadCommand(ICommand):
     def __init__(self,
-                 *args) -> None:
-        super().__init__(args)
-        self._lba = int(args[0])
+                 lba: Any) -> None:
+        super().__init__()
+
+        self.__lba = lba
 
     def execute(self) -> None:
-        subprocess.run(["python", "-m", "custom_ssd.cssd", "R", str(self._lba)],
-                       check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
-
-        print(f"{[int(self._lba)]} - {CustomOS().read_from_memory()}")
+        ICommand._send_ssd_command("R", self.__lba)
+        print(f"[{self.__lba}] - {CustomOS().read_from_memory()}")
 
 
 class FullReadCommand(ICommand):
@@ -68,33 +69,31 @@ class FullReadCommand(ICommand):
 
 class EraseSizeCommand(ICommand):
     def __init__(self,
-                 *args) -> None:
-        super().__init__(args)
-        self._start_lba = int(args[0])
-        self._size = int(args[1])
+                 start_lba: Any,
+                 size: Any) -> None:
+        super().__init__()
+
+        self.__start_lba = int(start_lba)
+        self.__end_lba = self.__start_lba + int(size)
 
     def execute(self) -> None:
-        EraseRangeCommand(self._start_lba,
-                          self._start_lba + self._size).execute()
+        EraseRangeCommand(self.__start_lba, self.__end_lba).execute()
 
 
 class EraseRangeCommand(ICommand):
     def __init__(self,
-                 *args) -> None:
-        super().__init__(args)
-        self._start_lba = int(args[0])
-        self._end_lba = int(args[1])
+                 start_lba: Any,
+                 end_lba: Any) -> None:
+        super().__init__()
+
+        self.__start_lba = int(start_lba)
+        self.__end_lba = int(end_lba) - 1  # end_lba is not to be erased
 
     def execute(self) -> None:
-        slba = self._start_lba
-        while slba + 10 < self._end_lba:
-            subprocess.run(["python", "-m", "custom_ssd.cssd", "E", str(slba), str(10)],
-                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
-            slba += 10
-
-        if slba < self._end_lba:
-            subprocess.run(["python", "-m", "custom_ssd.cssd", "E", str(slba), str(self._end_lba - slba)],
-                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
+        while self.__start_lba <= self.__end_lba:
+            size = min(10, self.__end_lba - self.__start_lba + 1)
+            ICommand._send_ssd_command("E", self.__start_lba, size)
+            self.__start_lba += size
 
 
 class HelpCommand(ICommand):
@@ -104,13 +103,5 @@ class HelpCommand(ICommand):
 
 
 class FlushCommand(ICommand):
-    def __init__(self,
-                 *args) -> None:
-        super().__init__(args)
-
     def execute(self) -> None:
-        try:
-            subprocess.run(["python", "-m", "custom_ssd.cssd", "F"],
-                           check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
-        except subprocess.CalledProcessError:
-            raise
+        ICommand._send_ssd_command("F")

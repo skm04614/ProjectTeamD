@@ -1,3 +1,4 @@
+import re
 import sys
 
 import testing_suite
@@ -9,6 +10,7 @@ class CustomShell:
         while True:
             args = input("==================================================\n>> ").split()
             if not args:
+                print("Use 'help' to see the manual.")
                 continue
 
             operation = args[0]
@@ -16,56 +18,21 @@ class CustomShell:
                 print("Exiting session.")
                 return
 
-            # TODO: refactor out testapp1 and testapp2
             try:
                 self.execute(*args)
             except ICommand.UnsupportedException:
                 print("INVALID COMMAND")
-            except (TypeError, IndexError):
-                print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
-                print("Use 'help' to see the manual.")
-            except ValueError:
-                print(f"'{operation}' IS CALLED WITH INVALID TYPED SET OF PARAMETERS.")
-                print("Use 'help' to see the manual.")
             except subprocess.CalledProcessError as e:
-                print(e.stderr)
+                error_pattern = re.compile(r"^\w+(Error|Exception).*", re.I)
+                print(*(line for line in e.stderr.splitlines() if error_pattern.match(line)), sep="\n")
+                print("Use 'help' to see the manual.")
+            except Exception as e:
+                print(f"{e.__class__.__name__}: {str(e)}")
+                print("Use 'help' to see the manual.")
 
     def execute(self,
                 *args) -> None:
-        CustomShell._invoke_command(CustomShell._command_factory(*args))
-
-    @staticmethod
-    def _invoke_command(command: ICommand) -> None:
-        command.execute()
-
-    @staticmethod
-    def _command_factory(operation: str,
-                         *args) -> ICommand:
-        if operation == "read":
-            return ReadCommand(*args)
-
-        if operation == "write":
-            return WriteCommand(*args)
-
-        if operation == "fullwrite":
-            return FullWriteCommand(*args)
-
-        if operation == "fullread":
-            return FullReadCommand(*args)
-
-        if operation == "help":
-            return HelpCommand(*args)
-
-        if operation == "erase":
-            return EraseSizeCommand(*args)
-
-        if operation == "erase_range":
-            return EraseRangeCommand(*args)
-
-        if operation == "flush":
-            return FlushCommand(*args)
-
-        raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
+        self._command_factory(*args).execute()
 
     def run(self,
             test_scenario_path: str) -> None:
@@ -99,6 +66,36 @@ class CustomShell:
                     print("Pass")
         finally:
             print("###########################  Runner End  ###########################")
+
+    @classmethod
+    def _command_factory(cls,
+                         operation: str,
+                         *args) -> ICommand:
+        if operation == "read":
+            return ReadCommand(*args)
+
+        if operation == "write":
+            return WriteCommand(*args)
+
+        if operation == "fullwrite":
+            return FullWriteCommand(*args)
+
+        if operation == "fullread":
+            return FullReadCommand(*args)
+
+        if operation == "help":
+            return HelpCommand(*args)
+
+        if operation == "erase":
+            return EraseSizeCommand(*args)
+
+        if operation == "erase_range":
+            return EraseRangeCommand(*args)
+
+        if operation == "flush":
+            return FlushCommand(*args)
+
+        raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
 
 
 if __name__ == "__main__":
