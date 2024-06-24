@@ -109,3 +109,4 @@ class Logger(metaclass=Singleton):
 
 
 LOGGER = Logger()
+LOGGER.set_log_level(LOGGER.INFO)
