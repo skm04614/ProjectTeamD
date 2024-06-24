@@ -6,8 +6,8 @@ from custom_ssd.cssd import TARGET_SSD
 def tc_write_10_and_compare() -> bool:
     try:
         test_count = 10
-        target_lbas = sample(range(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND), test_count)
-        target_vals = [f"0x{num:08X}" for num in sample(range(TARGET_SSD.LBA_LOWER_BOUND, 0xFFFFFFFF), test_count)]
+        target_lbas = sample(range(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND + 1), test_count)
+        target_vals = [f"0x{n:08X}" for n in sample(range(TARGET_SSD.LBA_LOWER_BOUND, 0xFFFFFFFF + 1), test_count)]
         for lba, val in zip(target_lbas, target_vals):
             command = TARGET_SSD.command_factory("W", lba, val)
             TARGET_SSD.queue_command(command)
