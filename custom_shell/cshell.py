@@ -5,10 +5,12 @@ import subprocess
 
 import testing_suite
 from custom_shell.command import *
+from custom_logger import LOGGER
 
 
 class CustomShell:
     def session(self) -> None:
+        LOGGER.info("opened a new session.")
         while True:
             user_input = input("====================================================================\n>> ").strip()
             if not user_input:
@@ -47,18 +49,24 @@ class CustomShell:
 
     def run(self,
             test_scenario_path: str) -> None:
+        LOGGER.info("running test scenarios via runner.")
+
         print("##########################  Runner Start  ##########################")
         try:
             if not os.path.isabs(test_scenario_path):
+                LOGGER.warn("scenario_path is provided as a relative path.")
                 test_scenario_path = os.path.join(os.path.dirname(__file__), test_scenario_path)
 
             if not os.path.exists(test_scenario_path):
+                LOGGER.critical(f"path '{test_scenario_path}' does not exist.")
                 print(f"Path '{test_scenario_path}' does not exist.")
                 return
 
             with open(test_scenario_path, "r") as f:
                 for scenario in (line.strip() for line in f):
+                    LOGGER.info(f"attempting to run {scenario}.")
                     if not testing_suite.execute_scenario(scenario):
+                        LOGGER.critical(f"{scenario} failed... aborting runner.")
                         return
         finally:
             print("###########################  Runner End  ###########################")
@@ -91,6 +99,7 @@ class CustomShell:
         if operation == "flush":
             return FlushCommand(*args)
 
+        LOGGER.critical(f"The shell does not support '{operation}' command.")
         raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
 
 
