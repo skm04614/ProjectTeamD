@@ -4,7 +4,7 @@ from custom_ssd.cssd import TARGET_SSD
 
 
 def tc_fullwrite_and_erase_compare() -> None:
-    target_val = "0x1234ABCD"
+    target_val = f"0x{randint(0, 0xFFFFFFFF):08X}"
     for lba in range(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND + 1):
         TARGET_SSD.queue_command(TARGET_SSD.command_factory("W", lba, target_val))
 
@@ -14,7 +14,6 @@ def tc_fullwrite_and_erase_compare() -> None:
         erase_size = TARGET_SSD.LBA_UPPER_BOUND - start_lba + 1
     TARGET_SSD.queue_command(TARGET_SSD.command_factory("E", start_lba, erase_size))
 
-    erased_val = "0x00000000"
     for lba in range(start_lba, start_lba + erase_size):
         TARGET_SSD.queue_command(TARGET_SSD.command_factory("R", lba))
-        assert TARGET_SSD.custom_os.read_from_memory() == erased_val
+        assert TARGET_SSD.custom_os.read_from_memory() == TARGET_SSD.NULL
