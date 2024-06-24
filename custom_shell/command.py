@@ -5,6 +5,7 @@ from typing import Any
 from abc import ABC, abstractmethod
 
 from custom_operating_system.cos import CustomOS
+from custom_logger import LOGGER
 
 
 class ICommand(ABC):
@@ -20,6 +21,7 @@ class ICommand(ABC):
     @staticmethod
     def _send_ssd_command(op: str,
                           *args) -> None:
+        LOGGER.debug(f"subprocess call is made to run ssd.")
         subprocess.run(f"python -m custom_ssd.cssd {op} {' '.join(str(arg) for arg in args)}",
                        shell=True, check=True, text=True, timeout=15, capture_output=True, encoding="UTF-8")
 
@@ -34,6 +36,7 @@ class WriteCommand(ICommand):
         self.__val = val
 
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell write command.")
         ICommand._send_ssd_command("W", self.__lba, self.__val)
 
 
@@ -45,6 +48,7 @@ class FullWriteCommand(ICommand):
         self.__val = val
 
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell full write command.")
         for lba in range(0, 100):
             WriteCommand(lba, self.__val).execute()
 
@@ -57,12 +61,14 @@ class ReadCommand(ICommand):
         self.__lba = lba
 
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell read command.")
         ICommand._send_ssd_command("R", self.__lba)
         print(f"[{self.__lba}] - {CustomOS().read_from_memory()}")
 
 
 class FullReadCommand(ICommand):
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell full read command.")
         for lba in range(0, 100):
             ReadCommand(lba).execute()
 
@@ -77,6 +83,7 @@ class EraseSizeCommand(ICommand):
         self.__end_lba = self.__start_lba + int(size)
 
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell erase size command.")
         EraseRangeCommand(self.__start_lba, self.__end_lba).execute()
 
 
@@ -91,6 +98,7 @@ class EraseRangeCommand(ICommand):
         self.__end_lba = int(end_lba) - 1  # end_lba is not to be erased
 
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell erase range command.")
         while self.__start_lba <= self.__end_lba:
             size = min(10, self.__end_lba - self.__start_lba + 1)
             ICommand._send_ssd_command("E", self.__start_lba, size)
@@ -99,12 +107,14 @@ class EraseRangeCommand(ICommand):
 
 class HelpCommand(ICommand):
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell help command.")
         with open(os.path.join(os.path.dirname(__file__), "manual.txt"), "r") as f:
             print(f.read())
 
 
 class FlushCommand(ICommand):
     def execute(self) -> None:
+        LOGGER.debug(f"issued a shell flush command.")
         ICommand._send_ssd_command("F")
 
 

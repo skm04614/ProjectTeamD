@@ -102,12 +102,32 @@ Test Script는 가상 SSD의 기능을 자동으로 테스트하여 정상 작�
 
 
 ## UML
+### 1. custom_logger
+<p align="center">
+<img src="UML/custom_logger_diagram.png" width="350" alt="Custom Logger Diagram" ></img>
+</p>
+
+### 2. custom_operating_system
+<p align="center">
+<img src="UML/custom_operating_system_diagram.png" width="350" alt="Custom Logger Diagram"></img>
+</p>
+
+### 3. custom_ssd
+<p align="center">
+<img src="UML/custom_ssd_diagram.png" alt="Custom Logger Diagram"></img>
+</p>
+
+### 4. custom_shell
+<p align="center">
+<img src="UML/custom_shell_diagram.png" width="700" alt="Custom Logger Diagram"></img>
+</p>
+
 
 ## 사용방법
 
 ### 1. Python 환경 설정
 ```bash
-$ $ pip install virtualenv
+$ pip install virtualenv
 $ python -m virtualenv <venv dir>
 $ source <venv dir>/bin/activate
 $ pip install -r requirements.txt 
