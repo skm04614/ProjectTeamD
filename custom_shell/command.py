@@ -86,6 +86,7 @@ class EraseRangeCommand(ICommand):
                  end_lba: Any) -> None:
         super().__init__()
 
+        assert int(start_lba) < int(end_lba), "start_lba must be strictly less than end_lba."
         self.__start_lba = int(start_lba)
         self.__end_lba = int(end_lba) - 1  # end_lba is not to be erased
 
