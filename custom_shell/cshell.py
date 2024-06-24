@@ -7,6 +7,13 @@ import testing_suite
 from custom_shell.command import *
 from custom_logger import LOGGER
 
+def runner_decorator(func):
+    def wrapper(*args, **kwargs):
+        print("##########################  Runner Start  ##########################")
+        result = func(*args, **kwargs)
+        print("###########################  Runner End  ###########################")
+        return result
+    return wrapper
 
 class CustomShell:
     def session(self) -> None:
@@ -47,29 +54,26 @@ class CustomShell:
                 *args) -> None:
         self._command_factory(*args).execute()
 
+    @runner_decorator
     def run(self,
             test_scenario_path: str) -> None:
         LOGGER.info("running test scenarios via runner.")
 
-        print("##########################  Runner Start  ##########################")
-        try:
-            if not os.path.isabs(test_scenario_path):
-                LOGGER.warn("scenario_path is provided as a relative path.")
-                test_scenario_path = os.path.join(os.path.dirname(__file__), test_scenario_path)
+        if not os.path.isabs(test_scenario_path):
+            LOGGER.warn("scenario_path is provided as a relative path.")
+            test_scenario_path = os.path.join(os.path.dirname(__file__), test_scenario_path)
 
-            if not os.path.exists(test_scenario_path):
-                LOGGER.critical(f"path '{test_scenario_path}' does not exist.")
-                print(f"Path '{test_scenario_path}' does not exist.")
-                return
+        if not os.path.exists(test_scenario_path):
+            LOGGER.critical(f"path '{test_scenario_path}' does not exist.")
+            print(f"Path '{test_scenario_path}' does not exist.")
+            return
 
-            with open(test_scenario_path, "r") as f:
-                for scenario in (line.strip() for line in f):
-                    LOGGER.info(f"attempting to run {scenario}.")
-                    if not testing_suite.execute_scenario(scenario):
-                        LOGGER.critical(f"{scenario} failed... aborting runner.")
-                        return
-        finally:
-            print("###########################  Runner End  ###########################")
+        with open(test_scenario_path, "r") as f:
+            for scenario in (line.strip() for line in f):
+                LOGGER.info(f"attempting to run {scenario}.")
+                if not testing_suite.execute_scenario(scenario):
+                    LOGGER.critical(f"{scenario} failed... aborting runner.")
+                    return
 
     @classmethod
     def _command_factory(cls,
