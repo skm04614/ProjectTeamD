@@ -161,7 +161,7 @@ class TestSSD(TestCase):
         nand_data = ["0x00000000" for _ in range(self.__ssd.LBA_LOWER_BOUND,
                                                      self.__ssd.LBA_UPPER_BOUND + 1)]
 
-        test_vals = ["0x" + format(i, "08X")[:10] for i in range(0, 10, 1)]
+        test_vals = [f"0x{i:08X}" for i in range(0, 10, 1)]
         for lba, val in enumerate(test_vals):
             self.__ssd.queue_command(self.__ssd.command_factory("W", lba, val))
 
@@ -188,7 +188,7 @@ class TestSSD(TestCase):
             self.assertEqual(expected_val, self.__ssd.search(lba))
 
     def test_flush_max_buffer_size_after_optimization(self):
-        test_vals = ["0x" + format(i, "08X")[:10] for i in range(0, 8, 1)]
+        test_vals = [f"0x{i:08X}" for i in range(0, 8, 1)]
         for lba, val in enumerate(test_vals):
             self.__ssd.queue_command(self.__ssd.command_factory("W", lba, val))
 
