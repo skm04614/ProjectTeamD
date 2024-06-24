@@ -46,3 +46,11 @@ def execute_scenario(scenario: str) -> bool:
         LOGGER.info(f"{scenario} executed successfully.")
         print("Pass")
         return True
+
+
+def extract_latest_test_scenarios():
+    with open(os.path.join(os.path.dirname(__file__), "latest_test.list"), "w") as f:
+        f.writelines(f"{scenario}\n" for scenario in get_tests())
+
+
+extract_latest_test_scenarios()
