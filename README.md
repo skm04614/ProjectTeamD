@@ -25,12 +25,12 @@
 
 |팀원|역할|mail|
 |------|---|---|
-|문석기님|⭐️팀장##|skm04614@gmail.com|
-|김도경님|##|dolgyuk@gmail.com|
-|이상혁님|##|hyugi012@gmail.com|
-|박진희님|##|genie121110@gmail.com|
-|이성화님|##|sunghwaa.lee@gmail.com|
-|김영민님|##|arcetral@gmail.com|
+|문석기님|👑팀장👑<br><b>코드의 수호자</b> 이자 <b>스피드 스타터</b> 이며 <b>리더십의 판도라</b>.. 즉 <b>`코딩 고수`</b>|skm04614@gmail.com|
+|김도경님|리뷰어 - 🧙‍♂️<b>품질의 수호자</b> <br>뛰어난 품질을 유지하도록 코드를 보호하는 수호자|dolgyuk@gmail.com|
+|이상혁님|개발자 - 🎵<b>코드 마에스트로</b><br>뛰어난 지휘력으로 코드를 작성하고 관리하는 뛰어난 지도자|hyugi012@gmail.com|
+|박진희님|테스터 - 🕵️‍♂️<b>버그 탐험가</b><br>발생 가능한 오류를 발견하는 탐험가|genie121110@gmail.com|
+|이성화님|개발자 - 🥷<b>코딩 닌자</b><br>훌륭한 코딩 기술과 빠른 개발 속도를 자랑하는 팀의 닌자|sunghwaa.lee@gmail.com|
+|김영민님|리뷰어 - 🦅<b>매의 눈</b><br>명세서를 샅샅히 뒤져 누락된 부분을 보완해주는 철저한 검토자|arcetral@gmail.com|
 
 ### Groud Rule
 1. 매일 인사하기
@@ -106,7 +106,7 @@ Test Script는 가상 SSD의 기능을 자동으로 테스트하여 정상 작�
 ## 사용방법
 
 ### 1. Python 환경 설정
-```
+```bash
 $ $ pip install virtualenv
 $ python -m virtualenv <venv dir>
 $ source <venv dir>/bin/activate
@@ -114,8 +114,41 @@ $ pip install -r requirements.txt
 ```
 
 ### 2. 터미널에서 실행
-```
+```bash
 $ python -m custom_shell.cshell
+```
+
+### 3. Test 시나리오 실행
+```python
+====================================================================
+# 도움말
+>> help
+write [lba] [val]         -   writes a val on lba (ex. write 10 0x1234ABCD)
+read [lba]                -   reads the val written on lba (ex. read 10)
+exit                      -   exits program
+help                      -   prints manual to stdout
+fullwrite [val]           -   writes val to all lbas ranging from 0 to 99
+fullread                  -   reads all vals written on each lba ranging from 0 to 99 and prints to stdout
+erase [lba] [size]        -   wipes ssd 'size' amount of lbas starting from lba
+erase_range [slba] [elba] -   wipes ssd lba in range [slba, elba)
+list_tc                   -   lists all testable scenarios (tcs)
+run [tc #1] [tc #2] ...   -   runs test scenarios if such scenario is defined in the testing_suite
+====================================================================
+# Test 시나리오 리스트 조회
+>> list_tc
+tc_app_1
+tc_app_2
+tc_fail
+tc_fullread_10_times_compare
+tc_single_random_lba_val_write_compare
+tc_write_10_times_and_compare
+====================================================================
+# Test 수행
+>> run tc_app_1 tc_fail tc_write_10_times_and_compare
+* tc_app_1 ------------------------------------------ Run...Pass
+* tc_fail ------------------------------------------- Run...FAIL!
+* tc_write_10_times_and_compare --------------------- Run...Pass
+====================================================================
 ```
 
 
