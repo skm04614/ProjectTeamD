@@ -26,7 +26,7 @@ class CustomShell:
                 continue
 
             args = user_input.split()
-            if args[0] == "run":
+            if args[0] == "run" and args[1:]:
                 for scenario in args[1:]:
                     testing_suite.execute_scenario(scenario)
                 continue
