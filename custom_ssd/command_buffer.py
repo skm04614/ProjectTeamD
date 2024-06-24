@@ -34,8 +34,8 @@ class CommandBuffer:
                     index: int) -> ICommand:
         return self.__commands[index]
 
-    def is_full(self) -> bool:
-        return len(self) >= CommandBuffer.MAX_SIZE
+    def overflows(self) -> bool:
+        return len(self) > CommandBuffer.MAX_SIZE
 
     def push(self,
              new_command: ICommand) -> None:
@@ -45,7 +45,7 @@ class CommandBuffer:
 
         self.__optimize_and_queue_new_command(new_command)
 
-        if self.is_full():
+        if self.overflows():
             LOGGER.info(f"Buffer-initiated buffer flush (b/c buffer is full).")
             self.flush()
 
