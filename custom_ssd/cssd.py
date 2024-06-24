@@ -12,7 +12,7 @@ from custom_ssd.command_buffer import CommandBuffer
 
 class ISSD(ABC):
     STORAGE_SIZE = 0    # Byte
-    LBA_UNIT = 4        # Byte
+    LBA_UNIT = 1        # Byte
 
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 0
@@ -149,9 +149,10 @@ class ISSD(ABC):
 
 class SSD(ISSD):
     STORAGE_SIZE = 400
+    LBA_UNIT = 4
 
     LBA_LOWER_BOUND = 0
-    LBA_UPPER_BOUND = (STORAGE_SIZE // ISSD.LBA_UNIT) - 1
+    LBA_UPPER_BOUND = (STORAGE_SIZE // LBA_UNIT) - 1
 
     MIN_ERASE_SIZE = 1
     MAX_ERASE_SIZE = 10
