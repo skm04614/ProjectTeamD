@@ -126,15 +126,15 @@ Test Script는 가상 SSD의 기능을 자동으로 테스트하여 정상 작�
 ## 사용방법
 
 ### 1. Python 환경 설정
-```
-$ $ pip install virtualenv
+```bash
+$ pip install virtualenv
 $ python -m virtualenv <venv dir>
 $ source <venv dir>/bin/activate
 $ pip install -r requirements.txt 
 ```
 
 ### 2. 터미널에서 실행
-```
+```bash
 $ python -m custom_shell.cshell
 ```
 
