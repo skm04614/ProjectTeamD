@@ -42,17 +42,17 @@ class CommandBuffer:
             new_command.execute()
             return
 
+        self.__optimize_and_queue_new_command(new_command)
+
         if self.is_full():
             self.flush()
 
-        self.__optimize_and_queue_new_command(new_command)
-
     def flush(self) -> None:
-        for command in self:
+        for command in self[:CommandBuffer.MAX_SIZE]:
             command.execute()
 
-        self.__commands = []
-        self._clear_commands_in_path()
+        self.__commands = self[CommandBuffer.MAX_SIZE:]
+        self._save_commands_to_path()
 
     def _load_commands_from_path(self) -> None:
         if not os.path.exists(self.__buffer_path):
@@ -63,11 +63,9 @@ class CommandBuffer:
             for line in f:
                 self.__commands.append(self._master_ssd.command_factory(*line.strip().split()))
 
-        self.flush()
-
-    def _clear_commands_in_path(self) -> None:
+    def _save_commands_to_path(self) -> None:
         with open(self.__buffer_path, "w") as f:
-            pass
+            f.writelines(f"{str(command)}\n" for command in self)
 
     def __optimize_and_queue_new_command(self,
                                          new_command: ICommand) -> None:
@@ -76,8 +74,7 @@ class CommandBuffer:
         elif isinstance(new_command, EraseCommand):
             self.__optimize_and_queue_new_erase_command(new_command)
 
-        with open(self.__buffer_path, "w") as f:
-            f.writelines(f"{str(command)}\n" for command in self)
+        self._save_commands_to_path()
 
     def __optimize_and_queue_new_write_command(self,
                                                new_command: WriteCommand) -> None:
