@@ -141,3 +141,7 @@ class TestCustomShell(TestCase):
             for lba in range(94, 99):
                 self.assertEqual(f"[{lba}] - 0x00000000", result[lba])
             self.assertEqual("[99] - 0x123AFE18", result[99])
+
+    def test_invalid_flush_args(self):
+        with self.assertRaises(TypeError):
+            self.__cshell.execute("flush", 0)

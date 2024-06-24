@@ -35,7 +35,7 @@ class CommandBuffer:
         return self.__commands[index]
 
     def is_full(self) -> bool:
-        return len(self) >= CommandBuffer.MAX_SIZE
+        return len(self) > CommandBuffer.MAX_SIZE
 
     def push(self,
              new_command: ICommand) -> None:
