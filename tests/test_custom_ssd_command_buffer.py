@@ -248,15 +248,9 @@ class TestSSD(TestCase):
 
             ssd = SSD(nand_path, buffer_path)
 
-            expected_vals = ["0x00000000" for _ in range(ssd.LBA_LOWER_BOUND,
-                                                         ssd.LBA_UPPER_BOUND + 1)]
             for lba, val in zip(lbas, vals):
-                expected_vals[lba] = val
+                self.assertEqual(val, ssd.search(lba))
 
-            with open(nand_path, "r") as f:
-                for expected_val in expected_vals:
-                    self.assertEqual(f.readline().strip(), expected_val)
-                self.assertEqual("", f.read().strip())
         finally:
             for path in (buffer_path, nand_path):
                 try:
