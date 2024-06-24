@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "**"
+      - "!main"
   pull_request:
     branches:
       - "main"
@@ -59,12 +60,16 @@ jobs:
       - name: Auto update README
         run: |
           python -m util.update_readme
-      - name: Commit changes
+      - name: Check for changes
+        id: git_status
+        run: |
+          git add README.md
+          git diff-index --quiet HEAD || echo "changes"
+      - name: Commit and push changes
+        if: steps.git_status.outputs.changes == 'changes'
         run: |
           git config --global user.name 'github nickname'
           git config --global user.email 'github email'
           git add "README.md"
           git commit -am "auto: updating README.md"
-      - name: Push changes
-        run: |
           git push
