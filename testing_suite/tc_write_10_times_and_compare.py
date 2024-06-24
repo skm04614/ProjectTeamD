@@ -1,4 +1,4 @@
-from random import sample, randint
+from random import sample
 
 from custom_ssd.cssd import TARGET_SSD
 
