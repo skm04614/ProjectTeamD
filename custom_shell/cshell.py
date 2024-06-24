@@ -1,8 +1,10 @@
-import io
+import os
+import re
 import sys
+import subprocess
 
-from contextlib import redirect_stdout
-from custom_shell.commands import *
+import testing_suite
+from custom_shell.command import *
 
 
 class CustomShell:
@@ -10,6 +12,7 @@ class CustomShell:
         while True:
             args = input("==================================================\n>> ").split()
             if not args:
+                print("Use 'help' to see the manual.")
                 continue
 
             operation = args[0]
@@ -17,35 +20,58 @@ class CustomShell:
                 print("Exiting session.")
                 return
 
-            # TODO: refactor out testapp1 and testapp2
-            if operation == "testapp1":
-                self.testapp1()
-            elif operation == "testapp2":
-                self.testapp2()
-            else:
-                try:
-                    self.execute(*args)
-                except ICommand.UnsupportedException:
-                    print("INVALID COMMAND")
-                except (TypeError, IndexError):
-                    print(f"INVALID SET OF PARAMETERS PROVIDED FOR '{operation}'.")
-                    print("Use 'help' to see the manual.")
-                except ValueError:
-                    print(f"'{operation}' IS CALLED WITH INVALID TYPED SET OF PARAMETERS.")
-                    print("Use 'help' to see the manual.")
-                except subprocess.CalledProcessError as e:
-                    print(e.stderr)
+            try:
+                self.execute(*args)
+            except ICommand.UnsupportedException:
+                print("INVALID COMMAND")
+            except subprocess.CalledProcessError as e:
+                error_pattern = re.compile(r"^\w+(Error|Exception).*", re.I)
+                print(*(line for line in e.stderr.splitlines() if error_pattern.match(line)), sep="\n")
+                print("Use 'help' to see the manual.")
+            except Exception as e:
+                print(f"{e.__class__.__name__}: {str(e)}")
+                print("Use 'help' to see the manual.")
 
     def execute(self,
                 *args) -> None:
-        CustomShell._invoke_command(CustomShell._command_factory(*args))
+        self._command_factory(*args).execute()
 
-    @staticmethod
-    def _invoke_command(command: ICommand) -> None:
-        command.execute()
+    def run(self,
+            test_scenario_path: str) -> None:
+        print("##########################  Runner Start  ##########################")
+        try:
+            if not os.path.isabs(test_scenario_path):
+                test_scenario_path = os.path.join(os.path.dirname(__file__), test_scenario_path)
 
-    @staticmethod
-    def _command_factory(operation: str,
+            if not os.path.exists(test_scenario_path):
+                print(f"Path '{test_scenario_path}' does not exist.")
+                return
+
+            testable_scenarios = testing_suite.get_tests()
+
+            with open(test_scenario_path, "r") as f:
+                for scenario in (line.strip() for line in f):
+                    trimmed_scenario = scenario[:46]
+                    print(f"* {trimmed_scenario} {'-' * (50 - len(trimmed_scenario))} ",
+                          end="",
+                          flush=True)
+
+                    if scenario not in testable_scenarios:
+                        print(f"DOES NOT EXIST!!!")
+                        return
+
+                    print("Run...", end="", flush=True)
+                    if not testable_scenarios[scenario]():
+                        print("FAIL!")
+                        return
+
+                    print("Pass")
+        finally:
+            print("###########################  Runner End  ###########################")
+
+    @classmethod
+    def _command_factory(cls,
+                         operation: str,
                          *args) -> ICommand:
         if operation == "read":
             return ReadCommand(*args)
@@ -73,83 +99,11 @@ class CustomShell:
 
         raise ICommand.UnsupportedException(f"Requested operation, '{operation}', is not supported.")
 
-    def testapp1(self) -> bool:
-        test_value = "0x1234ABCD"
-        expected_result = "\n".join([f"[{lba}] - {test_value}" for lba in range(0, 100)])
-
-        self.execute("fullwrite", test_value)
-        with io.StringIO() as buf, redirect_stdout(buf):
-            self.execute("fullread")
-            result = buf.getvalue().strip()
-        print(result)
-        print(f"TestApp1 {'ran successfully' if expected_result == result else 'failed'}!")
-
-        return expected_result == result
-
-    def testapp2(self) -> bool:
-        lower_lba = 0
-        upper_lba = 5
-
-        val = "0xAAAABBBB"
-        for _ in range(30):
-            for lba in range(lower_lba, upper_lba + 1):
-                self.execute("write", lba, val)
-
-        val = "0x12345678"
-        for lba in range(lower_lba, upper_lba + 1):
-            self.execute("write", lba, val)
-
-        for lba in range(lower_lba, upper_lba + 1):
-            with io.StringIO() as buf, redirect_stdout(buf):
-                self.execute("read", lba)
-
-                result = buf.getvalue().strip()
-                expected = f"[{lba}] - {val}"
-                if result != expected:
-                    print(f"TestApp2 failed at LBA[{lba}]")
-                    print(f"Expected={expected}")
-                    print(f"Actual={result}")
-                    return False
-
-        print(f"TestApp2 executed successfully.")
-        return True
-
-    def runner(self,
-               scenario_path: str) -> None:
-        if not os.path.exists(scenario_path):
-            print("Scenario does not exist.")
-            return
-
-        print("--------------------Runner Start--------------------")
-        testable_scenarios = ('testapp1', 'testapp2')
-        with open(scenario_path, "r") as f:
-            for line in f:
-                scenario = line.strip()
-                print(f"{scenario:<20} --- Run...", end="", flush=True)
-
-                method = getattr(self, scenario, None)
-                if scenario in testable_scenarios and callable(method):
-                    try:
-                        with io.StringIO() as buf, redirect_stdout(buf):
-                            result = method()
-
-                        if not result:
-                            print("Fail!")
-                            break
-                        print("Pass")
-                    except subprocess.CalledProcessError:
-                        print("Fail!")
-                        break
-                else:
-                    print("INVALID SCENARIO")
-                    break
-        print("---------------------Runner End---------------------")
-
 
 if __name__ == "__main__":
     cshell = CustomShell()
 
     if len(sys.argv) > 1:
-        cshell.runner(sys.argv[1])
+        cshell.run(sys.argv[1])
     else:
         cshell.session()
