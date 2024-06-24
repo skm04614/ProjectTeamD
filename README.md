@@ -102,6 +102,26 @@ Test Script는 가상 SSD의 기능을 자동으로 테스트하여 정상 작�
 
 
 ## UML
+### 1. custom_logger
+<div style="text-align: center;">
+<img src="UML/custom_logger_diagram.png" width="250" alt="Custom Logger Diagram"></img>
+</div>
+
+### 2. custom_operating_system
+<div style="text-align: center;">
+<img src="UML/custom_operating_system_diagram.png" width="300" alt="Custom Logger Diagram"></img>
+</div>
+
+### 3. custom_ssd
+<div style="text-align: center;">
+<img src="UML/custom_ssd_diagram.png" alt="Custom Logger Diagram"></img>
+</div>
+
+### 4. custom_shell
+<div style="text-align: center;">
+<img src="UML/custom_shell_diagram.png" alt="Custom Logger Diagram"></img>
+</div>
+
 
 ## 사용방법
 
