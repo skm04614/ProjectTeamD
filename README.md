@@ -119,7 +119,7 @@ Test Script는 가상 SSD의 기능을 자동으로 테스트하여 정상 작�
 
 ### 4. custom_shell
 <p align="center">
-<img src="UML/custom_shell_diagram.png" alt="Custom Logger Diagram"></img>
+<img src="UML/custom_shell_diagram.png" width="700" alt="Custom Logger Diagram"></img>
 </p>
 
 
