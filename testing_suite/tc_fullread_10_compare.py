@@ -3,14 +3,18 @@ from custom_ssd.cssd import TARGET_SSD
 
 def tc_fullread_10_compare() -> bool:
     try:
+        test_count = 10
         compare = ""
-        for lba in range(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND + 1):
-            command = TARGET_SSD.command_factory("R", lba)
-            TARGET_SSD.queue_command(command)
+        for _ in range(test_count):
+            results = []
+            for lba in range(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND + 1):
+                command = TARGET_SSD.command_factory("R", lba)
+                TARGET_SSD.queue_command(command)
+                results.append(TARGET_SSD.custom_os.read_from_memory())
             if not compare:
-                compare = TARGET_SSD.custom_os.read_from_memory()
+                compare = "\n".join(results)
                 continue
-            assert TARGET_SSD.custom_os.read_from_memory() == compare
+            assert compare == "\n".join(results)
     except:
         return False
     else:
