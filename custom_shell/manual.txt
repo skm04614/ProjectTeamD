@@ -5,4 +5,6 @@ help                      -   prints manual to stdout
 fullwrite [val]           -   writes val to all lbas ranging from 0 to 99
 fullread                  -   reads all vals written on each lba ranging from 0 to 99 and prints to stdout
 erase [lba] [size]        -   wipes ssd 'size' amount of lbas starting from lba
-erase_range [slba] [elba] -   wipes ssd lba in range 'slba' ~ 'elba'
+erase_range [slba] [elba] -   wipes ssd lba in range [slba, elba)
+list_tc                   -   lists all testable scenarios (tcs)
+run [tc #1] [tc #2] ...   -   runs test scenarios if such scenario is defined in the testing_suite

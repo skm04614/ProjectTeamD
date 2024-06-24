@@ -18,3 +18,24 @@ def get_tests() -> dict[str, Callable]:
         test_functions.update({member[1].__name__: member[1] for member in members})
 
     return test_functions
+
+
+def execute_scenario(scenario: str) -> bool:
+    testable_scenarios = get_tests()
+
+    trimmed_scenario = scenario[:46]
+    print(f"* {trimmed_scenario} {'-' * (50 - len(trimmed_scenario))} ",
+          end="",
+          flush=True)
+
+    if scenario not in testable_scenarios:
+        print("DOES NOT EXIST!!!")
+        return False
+
+    print("Run...", end="", flush=True)
+    if not testable_scenarios[scenario]():
+        print("FAIL!")
+        return False
+
+    print("Pass")
+    return True
