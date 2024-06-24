@@ -39,9 +39,14 @@ class CommandBuffer:
 
     def push(self,
              new_command: ICommand) -> None:
-        self.__optimize_and_queue_new_command(new_command)
+        if not (isinstance(new_command, WriteCommand) or isinstance(new_command, EraseCommand)):
+            new_command.execute()
+            return
+
         if self.is_full():
             self.flush()
+
+        self.__optimize_and_queue_new_command(new_command)
 
     def flush(self) -> None:
         for command in self:
@@ -71,9 +76,6 @@ class CommandBuffer:
             self.__optimize_and_queue_new_write_command(new_command)
         elif isinstance(new_command, EraseCommand):
             self.__optimize_and_queue_new_erase_command(new_command)
-        else:
-            new_command.execute()
-            return
 
         with open(self.__buffer_path, "w") as f:
             f.writelines(f"{str(command)}\n" for command in self)
