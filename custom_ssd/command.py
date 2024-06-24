@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from abc import ABC, abstractmethod
 
-from typing import TYPE_CHECKING
+from custom_logger import LOGGER
 
 if TYPE_CHECKING:
     from custom_ssd.cssd import ISSD
@@ -39,7 +39,7 @@ class ICommand(ABC):
 
     @abstractmethod
     def execute(self) -> None:
-        pass
+        LOGGER.debug(f"executing {self}")
 
     def set_lbas(self,
                  start_lba: int,
@@ -74,6 +74,7 @@ class WriteCommand(ICommand):
         return self._val
 
     def execute(self) -> None:
+        super().execute()
         for lba in range(self.start_lba, self.end_lba + 1):
             self._ssd.update_nand_data(lba, self.val)
         self._ssd.flush_nand_data_to_path()
@@ -89,6 +90,7 @@ class ReadCommand(ICommand):
         return f"R {self._start_lba}"
 
     def execute(self) -> None:
+        super().execute()
         self._ssd.custom_os.write_to_memory(self._ssd.search(self._start_lba))
 
 
@@ -115,6 +117,7 @@ class EraseCommand(ICommand):
         self.__size = size
 
     def execute(self) -> None:
+        super().execute()
         for lba in range(self._start_lba, self._end_lba + 1):
             self._ssd.update_nand_data(lba, "0x00000000")
         self._ssd.flush_nand_data_to_path()
@@ -129,6 +132,7 @@ class FlushCommand(ICommand):
         return "F"
 
     def execute(self) -> None:
+        super().execute()
         self._ssd.flush_buffer()
 
 
