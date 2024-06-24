@@ -1,7 +1,7 @@
 # DT팀의 SSD 프로젝트
 - 프로젝트 기간 : 2024-06-18 ~ 2024-06-25
-- 프로젝트 개요 : SSD 를 구현하고, SSD 를 테스트 할 수 있는 환경을 제공하고 추가적으로 Logger, Runner, Buffer 기능까지 개발한다.
-- 프로젝트 목표 : SSD, Shell 기능 구현시 TDD 를 적용하여 점진적으로 빠르고 쉽게 구현하고, Code Coverage 80% 이상을 달성하고, 리팩토링을 통해 클린코드를 작성할 수 있도록 합니다.  팀 단위 프로젝트를 통한 <b>팀 협업, 커뮤니케이션 능력을 향상시키고, 최종적으로는 실무에서도 클린코드 전파교육을 통해 품질 높은 코드를 작성하는 문화가 정착될 수 있도록 하는 것이 목표입니다.</b> 💪💪💪
+- 프로젝트 개요 : SSD 를 구현하고, SSD 를 테스트 할 수 있는 환경을 제공하고 추가적으로 Logger, Runner, Buffer 기능 개발까지 포함합니다.
+- 프로젝트 목표 : SSD, Shell 기능 구현시 TDD 를 적용하여 점진적으로 빠르고 쉽게 구현하고, Code Coverage 90% 이상을 달성하고, 리팩토링을 통해 클린코드를 작성할 수 있도록 합니다. 팀 단위 프로젝트를 통한 팀 협업, 커뮤니케이션 능력을 향상시키고, 최종적으로는 실무에서도 클린코드 전파교육을 통해 <b>품질 높은 코드를 작성하는 문화가 정착될 수 있도록 하는 것이 목표입니다.</b> 💪💪💪
 
 
 ## 목차
@@ -25,12 +25,12 @@
 
 |팀원|역할|mail|
 |------|---|---|
-|문석기님|⭐️팀장##|skm04614@gmail.com|
-|김도경님|##|dolgyuk@gmail.com|
-|이상혁님|##|hyugi012@gmail.com|
-|박진희님|##|genie121110@gmail.com|
-|이성화님|##|sunghwaa.lee@gmail.com|
-|김영민님|##|arcetral@gmail.com|
+|문석기님|👑팀장👑<br><b>코드의 수호자</b> 이자 <b>스피드 스타터</b> 이며 <b>리더십의 판도라</b>.. 즉 <b>`코딩 고수`</b>|skm04614@gmail.com|
+|김도경님|리뷰어 - 🧙‍♂️<b>품질의 수호자</b> <br>뛰어난 품질을 유지하도록 코드를 보호하는 수호자|dolgyuk@gmail.com|
+|김영민님|리뷰어 - 🦅<b>매의 눈</b><br>명세서를 샅샅히 뒤져 누락된 부분을 보완해주는 철저한 검토자|arcetral@gmail.com|
+|이상혁님|개발자 - 🎵<b>코드 마에스트로</b><br>뛰어난 지휘력으로 코드를 작성하고 관리하는 뛰어난 지도자|hyugi012@gmail.com|
+|이성화님|개발자 - 🥷<b>코딩 닌자</b><br>훌륭한 코딩 기술과 빠른 개발 속도를 자랑하는 팀의 닌자|sunghwaa.lee@gmail.com|
+|박진희님|테스터 - 🕵️‍♂️<b>버그 탐험가</b><br>발생 가능한 오류를 발견하는 탐험가|genie121110@gmail.com|
 
 ### Groud Rule
 1. 매일 인사하기
@@ -102,20 +102,73 @@ Test Script는 가상 SSD의 기능을 자동으로 테스트하여 정상 작�
 
 
 ## UML
+### 1. custom_logger
+<p align="center">
+<img src="UML/custom_logger_diagram.png" width="350" alt="Custom Logger Diagram" ></img>
+</p>
+
+### 2. custom_operating_system
+<p align="center">
+<img src="UML/custom_operating_system_diagram.png" width="350" alt="Custom Logger Diagram"></img>
+</p>
+
+### 3. custom_ssd
+<p align="center">
+<img src="UML/custom_ssd_diagram.png" alt="Custom Logger Diagram"></img>
+</p>
+
+### 4. custom_shell
+<p align="center">
+<img src="UML/custom_shell_diagram.png" width="700" alt="Custom Logger Diagram"></img>
+</p>
+
 
 ## 사용방법
 
 ### 1. Python 환경 설정
-```
-$ $ pip install virtualenv
+```bash
+$ pip install virtualenv
 $ python -m virtualenv <venv dir>
 $ source <venv dir>/bin/activate
 $ pip install -r requirements.txt 
 ```
 
 ### 2. 터미널에서 실행
-```
+```bash
 $ python -m custom_shell.cshell
+```
+
+### 3. Test 시나리오 실행
+```python
+====================================================================
+# 도움말
+>> help
+write [lba] [val]         -   writes a val on lba (ex. write 10 0x1234ABCD)
+read [lba]                -   reads the val written on lba (ex. read 10)
+exit                      -   exits program
+help                      -   prints manual to stdout
+fullwrite [val]           -   writes val to all lbas ranging from 0 to 99
+fullread                  -   reads all vals written on each lba ranging from 0 to 99 and prints to stdout
+erase [lba] [size]        -   wipes ssd 'size' amount of lbas starting from lba
+erase_range [slba] [elba] -   wipes ssd lba in range [slba, elba)
+list_tc                   -   lists all testable scenarios (tcs)
+run [tc #1] [tc #2] ...   -   runs test scenarios if such scenario is defined in the testing_suite
+====================================================================
+# Test 시나리오 리스트 조회
+>> list_tc
+tc_app_1
+tc_app_2
+tc_fail
+tc_fullread_10_times_compare
+tc_single_random_lba_val_write_compare
+tc_write_10_times_and_compare
+====================================================================
+# Test 수행
+>> run tc_app_1 tc_fail tc_write_10_times_and_compare
+* tc_app_1 ------------------------------------------ Run...Pass
+* tc_fail ------------------------------------------- Run...FAIL!
+* tc_write_10_times_and_compare --------------------- Run...Pass
+====================================================================
 ```
 
 

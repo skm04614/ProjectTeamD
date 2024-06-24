@@ -4,6 +4,7 @@ import os
 from typing import Iterable
 
 from custom_ssd.command import *
+from custom_logger import LOGGER
 
 from typing import TYPE_CHECKING
 
@@ -33,8 +34,8 @@ class CommandBuffer:
                     index: int) -> ICommand:
         return self.__commands[index]
 
-    def is_full(self) -> bool:
-        return len(self) >= CommandBuffer.MAX_SIZE
+    def overflows(self) -> bool:
+        return len(self) > CommandBuffer.MAX_SIZE
 
     def push(self,
              new_command: ICommand) -> None:
@@ -44,7 +45,8 @@ class CommandBuffer:
 
         self.__optimize_and_queue_new_command(new_command)
 
-        if self.is_full():
+        if self.overflows():
+            LOGGER.info(f"Buffer-initiated buffer flush (b/c buffer is full).")
             self.flush()
 
     def flush(self) -> None:
@@ -55,6 +57,7 @@ class CommandBuffer:
         self._save_commands_to_path()
 
     def _load_commands_from_path(self) -> None:
+        LOGGER.debug(f"Loading commands saved in buffer path.")
         if not os.path.exists(self.__buffer_path):
             with open(self.__buffer_path, "w"):
                 return

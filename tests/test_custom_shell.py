@@ -80,6 +80,20 @@ class TestCustomShell(TestCase):
 
             self.assertEqual(expected, buf.getvalue().strip())
 
+    @patch.object(os.path, 'exists', return_value=False)
+    @patch('builtins.print')
+    def test_run_with_nonexistent_path(self, mock_print, mock_exists):
+        test_scenario_path = "path/to/nonexistent/file"
+        self.__cshell.run(test_scenario_path)
+
+        error_message_part1 = "Path"
+        error_message_part2 = "does not exist."
+
+        found_part1 = any(error_message_part1 in str(call) for call in mock_print.call_args_list)
+        found_part2 = any(error_message_part2 in str(call) for call in mock_print.call_args_list)
+
+        self.assertTrue(found_part1 and found_part2, "The expected error text was not printed.")
+
     @patch("builtins.input",
            side_effect=["write 0 0x12345678",
                         "read 0",
@@ -141,3 +155,7 @@ class TestCustomShell(TestCase):
             for lba in range(94, 99):
                 self.assertEqual(f"[{lba}] - 0x00000000", result[lba])
             self.assertEqual("[99] - 0x123AFE18", result[99])
+
+    def test_invalid_flush_args(self):
+        with self.assertRaises(TypeError):
+            self.__cshell.execute("flush", 0)

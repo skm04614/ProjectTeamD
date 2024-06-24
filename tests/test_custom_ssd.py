@@ -169,3 +169,53 @@ class TestSSD(TestCase):
 
         for lba, expected_val in enumerate(expected_vals):
             self.assertEqual(expected_val, self.__ssd._nand_data[lba])
+
+    def test_flush_max_buffer_size(self):
+        nand_data = ["0x00000000" for _ in range(self.__ssd.LBA_LOWER_BOUND,
+                                                     self.__ssd.LBA_UPPER_BOUND + 1)]
+
+        test_vals = [f"0x{i:08X}" for i in range(0, 10, 1)]
+        for lba, val in enumerate(test_vals):
+            self.__ssd.queue_command(self.__ssd.command_factory("W", lba, val))
+
+        self.assertEqual(10, len(self.__ssd._command_buffer))
+
+        for lba, expected_val in enumerate(test_vals):
+            self.assertEqual(expected_val, self.__ssd.search(lba))
+
+        for lba, expected_val in enumerate(nand_data):
+            self.assertEqual(expected_val, self.__ssd._nand_data[lba])
+
+        test_vals[9] = "0x11111111"
+        self.__ssd.queue_command(self.__ssd.command_factory("W", 9, test_vals[9]))
+        self.assertEqual(10, len(self.__ssd._command_buffer))
+
+        for lba, expected_val in enumerate(test_vals):
+            self.assertEqual(expected_val, self.__ssd.search(lba))
+
+        test_vals.append("0xAAAAAAAA")
+        self.__ssd.queue_command(self.__ssd.command_factory("W", 10, test_vals[10]))
+        self.assertEqual(1, len(self.__ssd._command_buffer))
+
+        for lba, expected_val in enumerate(test_vals):
+            self.assertEqual(expected_val, self.__ssd.search(lba))
+
+    def test_flush_max_buffer_size_after_optimization(self):
+        test_vals = [f"0x{i:08X}" for i in range(0, 8, 1)]
+        for lba, val in enumerate(test_vals):
+            self.__ssd.queue_command(self.__ssd.command_factory("W", lba, val))
+
+        self.assertEqual(8, len(self.__ssd._command_buffer))
+
+        for i in range(0,4):
+            test_vals.append("0x00000000")
+        self.__ssd.queue_command(self.__ssd.command_factory("E", 8, 4))
+
+        self.assertEqual(9, len(self.__ssd._command_buffer))
+
+        test_vals[10] = "0x10101010"
+        self.__ssd.queue_command(self.__ssd.command_factory("W", 10, test_vals[10]))
+        self.assertEqual(1, len(self.__ssd._command_buffer))
+
+        for lba, expected_val in enumerate(test_vals):
+            self.assertEqual(expected_val, self.__ssd.search(lba))

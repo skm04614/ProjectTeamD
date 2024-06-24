@@ -4,6 +4,7 @@ import os.path
 from abc import ABC
 from typing import Any
 
+from custom_logger import LOGGER
 from custom_operating_system.cos import CustomOS
 from custom_ssd.command import *
 from custom_ssd.command_buffer import CommandBuffer
@@ -12,6 +13,9 @@ from custom_ssd.command_buffer import CommandBuffer
 class ISSD(ABC):
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 0
+
+    VAL_LOWER_BOUND = 0x00000000
+    VAL_UPPER_BOUND = 0x00000000
 
     MIN_ERASE_SIZE = 1
     MAX_ERASE_SIZE = 1
@@ -53,10 +57,12 @@ class ISSD(ABC):
         if operation == "F":
             return FlushCommand(self, *args)
 
+        LOGGER.critical(f"SSD CommandFactory does not support '{operation}'.")
         raise AssertionError(f"user input, '{operation}', is not supported.")
 
     def queue_command(self,
                       command: ICommand) -> None:
+        LOGGER.debug(f"command '{str(command)}' queued.")
         self._command_buffer.push(command)
 
     def search(self,
@@ -66,9 +72,11 @@ class ISSD(ABC):
                 continue
 
             if isinstance(command, WriteCommand):
+                LOGGER.debug(f"fetching data at LBA #{lba} from buffer.")
                 return command.val
 
             if isinstance(command, EraseCommand):
+                LOGGER.debug(f"fetching data at LBA #{lba} from buffer.")
                 return self.NULL
 
         return self._nand_data[lba]
@@ -79,9 +87,11 @@ class ISSD(ABC):
         try:
             lba = int(lba)
         except (ValueError, TypeError):
+            LOGGER.warn(f"Invalid lba ({lba}).")
             raise TypeError("LBA must be an integer convertible value.")
 
         if not cls.LBA_LOWER_BOUND <= lba <= cls.LBA_UPPER_BOUND:
+            LOGGER.warn(f"Invalid lba ({lba}).")
             raise ValueError(f"LBA is out of range [{cls.LBA_LOWER_BOUND}, {cls.LBA_UPPER_BOUND}].")
 
     @classmethod
@@ -90,9 +100,11 @@ class ISSD(ABC):
         try:
             val = str(val)
         except (ValueError, TypeError):
+            LOGGER.warn(f"Invalid val ({val}).")
             raise TypeError("val must be an string convertible value.")
 
         if not re.match(r"^0x[0-9A-F]{8}$", val):
+            LOGGER.warn(f"Invalid val ({val}).")
             raise ValueError("val must be 10-characters long hex value starting with 0x (e.g. '0x1A2B3C4D').")
 
     @classmethod
@@ -101,17 +113,21 @@ class ISSD(ABC):
         try:
             size = int(size)
         except (ValueError, TypeError):
+            LOGGER.warn(f"Invalid erase size ({size}).")
             raise TypeError("erase size must be an integer convertible value.")
 
         if not cls.MIN_ERASE_SIZE <= size <= cls.MAX_ERASE_SIZE:
+            LOGGER.warn(f"Invalid erase size ({size}).")
             raise ValueError(f"Size is out of range [{cls.MIN_ERASE_SIZE}, {cls.MAX_ERASE_SIZE}].")
 
     def flush_buffer(self):
+        LOGGER.info(f"User-initiated buffer flush.")
         self._command_buffer.flush()
 
     def update_nand_data(self,
                          lba: int,
                          val: str) -> None:
+        LOGGER.debug(f"Updating data at LBA #{lba} to {val}.")
         self.check_lba(lba)
         self.check_val(val)
         self._nand_data[lba] = val
@@ -122,6 +138,7 @@ class ISSD(ABC):
 
     def _prepare_nand(self) -> None:
         if not os.path.exists(self._nand_path):
+            LOGGER.debug(f"Initializing nand path.")
             with open(self._nand_path, "w") as f:
                 f.writelines(f"{self.NULL}\n" for _ in range(self.LBA_LOWER_BOUND,
                                                              self.LBA_UPPER_BOUND + 1))
@@ -133,6 +150,9 @@ class ISSD(ABC):
 class SSD(ISSD):
     LBA_LOWER_BOUND = 0
     LBA_UPPER_BOUND = 99
+
+    VAL_LOWER_BOUND = 0x00000000
+    VAL_UPPER_BOUND = 0xFFFFFFFF
 
     MIN_ERASE_SIZE = 1
     MAX_ERASE_SIZE = 10

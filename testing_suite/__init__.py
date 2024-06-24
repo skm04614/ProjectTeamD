@@ -4,6 +4,8 @@ import importlib.util
 from glob import glob
 from typing import Callable
 
+from custom_logger import LOGGER
+
 
 def get_tests() -> dict[str, Callable]:
     test_functions = {}
@@ -29,13 +31,26 @@ def execute_scenario(scenario: str) -> bool:
           flush=True)
 
     if scenario not in testable_scenarios:
+        LOGGER.warn(f"{scenario} is not defined in the testing suite.")
         print("DOES NOT EXIST!!!")
         return False
 
     print("Run...", end="", flush=True)
-    if not testable_scenarios[scenario]():
+    try:
+        testable_scenarios[scenario]()
+    except Exception as e:
+        LOGGER.critical(f"{scenario} failed. {e.__class__.__name__}: {str(e)}")
         print("FAIL!")
         return False
+    else:
+        LOGGER.info(f"{scenario} executed successfully.")
+        print("Pass")
+        return True
 
-    print("Pass")
-    return True
+
+def extract_latest_test_scenarios():
+    with open(os.path.join(os.path.dirname(__file__), "latest_test.list"), "w") as f:
+        f.writelines(f"{scenario}\n" for scenario in get_tests())
+
+
+extract_latest_test_scenarios()
