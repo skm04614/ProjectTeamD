@@ -49,10 +49,10 @@ class CommandBuffer:
             self.flush()
 
     def flush(self) -> None:
-        for command in self[:10]:
+        for command in self[:CommandBuffer.MAX_SIZE]:
             command.execute()
 
-        self.__commands = self[10:]
+        self.__commands = self[CommandBuffer.MAX_SIZE:]
         self._save_commands_to_path()
 
     def _load_commands_from_path(self) -> None:
