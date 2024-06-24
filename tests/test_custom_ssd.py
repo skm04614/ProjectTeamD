@@ -1,5 +1,6 @@
 import os
 import itertools
+from unittest.mock import Mock
 
 import numpy as np
 from unittest import TestCase
@@ -84,8 +85,19 @@ class TestSSD(TestCase):
             with self.assertRaises(TypeError):
                 self.__ssd.command_factory("R", lba).execute()
 
+    def test_read_new_ssd_by_mock(self):
+        ssd = SSD(self.__test_nand_path,
+                  self.__test_buffer_path,
+                  Mock())
+        expected_val = "0x1234FFFF"
+        ssd.custom_os.read_from_memory.return_value = expected_val
+
+        for lba in range(ssd.LBA_LOWER_BOUND, ssd.LBA_UPPER_BOUND + 1):
+            ssd.command_factory("R", lba).execute()
+            self.assertEqual(expected_val, ssd.custom_os.read_from_memory())
+
     def test_read_new_ssd(self):
-        for lba in range(self.__ssd.LBA_LOWER_BOUND, self.__ssd.LBA_UPPER_BOUND):
+        for lba in range(self.__ssd.LBA_LOWER_BOUND, self.__ssd.LBA_UPPER_BOUND + 1):
             self.__ssd.command_factory("R", lba).execute()
             self.assertEqual("0x00000000", self.__ssd.custom_os.read_from_memory())
 
