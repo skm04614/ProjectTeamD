@@ -4,7 +4,7 @@ from custom_ssd.cssd import TARGET_SSD
 
 
 def tc_fullwrite_and_erase_compare() -> None:
-    target_val = f"0x{randint(0, 0xFFFFFFFF):08X}"
+    target_val = f"0x{randint(TARGET_SSD.VAL_LOWER_BOUND, TARGET_SSD.VAL_UPPER_BOUND):08X}"
     for lba in range(TARGET_SSD.LBA_LOWER_BOUND, TARGET_SSD.LBA_UPPER_BOUND + 1):
         TARGET_SSD.queue_command(TARGET_SSD.command_factory("W", lba, target_val))
 
