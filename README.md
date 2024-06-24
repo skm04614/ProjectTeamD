@@ -156,12 +156,14 @@ run [tc #1] [tc #2] ...   -   runs test scenarios if such scenario is defined in
 ====================================================================
 # Test 시나리오 리스트 조회
 >> list_tc
-tc_app_1
-tc_app_2
-tc_fail
+tc_fullwrite_and_erase_compare
 tc_fullread_10_times_compare
+tc_app_1
+tc_loop_write_and_read_compare
 tc_single_random_lba_val_write_compare
+tc_fail
 tc_write_10_times_and_compare
+tc_app_2
 ====================================================================
 # Test 수행
 >> run tc_app_1 tc_fail tc_write_10_times_and_compare
