@@ -92,7 +92,7 @@ class Logger(metaclass=Singleton):
 
             self.__zip_old_log_files()
 
-            timestamp = datetime.now().strftime("%y%m%d_%Hh_%Mm_%Ss")
+            timestamp = datetime.now().strftime("%y%m%d_%Hh_%Mm_%S.%fs")
             renamed_log_file = os.path.join(self.__root,
                                             f"until_{timestamp}.log")
             os.rename(self.__log_file, renamed_log_file)
