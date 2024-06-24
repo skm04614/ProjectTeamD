@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import os
 from typing import Iterable
 
@@ -93,16 +92,16 @@ class CommandBuffer:
 
             if isinstance(command, EraseCommand):
                 try:
-                    cmd = copy.copy(command)
-                    cmd.set_lbas(cmd.start_lba, new_command.start_lba - 1)
+                    size = new_command.start_lba - command.start_lba
+                    cmd = EraseCommand(self._master_ssd, command.start_lba, size)
                 except:
                     pass
                 else:
                     commands.append(cmd)
 
                 try:
-                    cmd = copy.copy(command)
-                    cmd.set_lbas(new_command.end_lba + 1, cmd.end_lba)
+                    size = command.end_lba - new_command.end_lba
+                    cmd = EraseCommand(self._master_ssd, new_command.end_lba + 1, size)
                 except:
                     pass
                 else:
