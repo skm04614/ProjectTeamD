@@ -10,15 +10,24 @@ from custom_shell.command import *
 class CustomShell:
     def session(self) -> None:
         while True:
-            args = input("==================================================\n>> ").split()
-            if not args:
+            user_input = input("====================================================================\n>> ").strip()
+            if not user_input:
                 print("Use 'help' to see the manual.")
                 continue
 
-            operation = args[0]
-            if operation == "exit":
+            if user_input == "exit":
                 print("Exiting session.")
                 return
+
+            if user_input == "list_tc":
+                print(*(tc for tc in testing_suite.get_tests()), sep="\n")
+                continue
+
+            args = user_input.split()
+            if args[0] == "run":
+                for scenario in args[1:]:
+                    testing_suite.execute_scenario(scenario)
+                continue
 
             try:
                 self.execute(*args)
@@ -47,25 +56,10 @@ class CustomShell:
                 print(f"Path '{test_scenario_path}' does not exist.")
                 return
 
-            testable_scenarios = testing_suite.get_tests()
-
             with open(test_scenario_path, "r") as f:
                 for scenario in (line.strip() for line in f):
-                    trimmed_scenario = scenario[:46]
-                    print(f"* {trimmed_scenario} {'-' * (50 - len(trimmed_scenario))} ",
-                          end="",
-                          flush=True)
-
-                    if scenario not in testable_scenarios:
-                        print(f"DOES NOT EXIST!!!")
+                    if not testing_suite.execute_scenario(scenario):
                         return
-
-                    print("Run...", end="", flush=True)
-                    if not testable_scenarios[scenario]():
-                        print("FAIL!")
-                        return
-
-                    print("Pass")
         finally:
             print("###########################  Runner End  ###########################")
 
