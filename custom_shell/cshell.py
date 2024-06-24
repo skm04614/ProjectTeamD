@@ -7,6 +7,16 @@ import testing_suite
 from custom_shell.command import *
 
 
+def run_decorator(func):
+    def wrapper(*args, **kwargs):
+        print("##########################  Runner Start  ##########################")
+        result = func(*args, **kwargs)
+        print("###########################  Runner End  ###########################")
+        return result
+
+    return wrapper
+
+
 class CustomShell:
     def session(self) -> None:
         while True:
@@ -36,38 +46,35 @@ class CustomShell:
                 *args) -> None:
         self._command_factory(*args).execute()
 
+    @run_decorator
     def run(self,
             test_scenario_path: str) -> None:
-        print("##########################  Runner Start  ##########################")
-        try:
-            if not os.path.isabs(test_scenario_path):
-                test_scenario_path = os.path.join(os.path.dirname(__file__), test_scenario_path)
+        if not os.path.isabs(test_scenario_path):
+            test_scenario_path = os.path.join(os.path.dirname(__file__), test_scenario_path)
 
-            if not os.path.exists(test_scenario_path):
-                print(f"Path '{test_scenario_path}' does not exist.")
-                return
+        if not os.path.exists(test_scenario_path):
+            print(f"Path '{test_scenario_path}' does not exist.")
+            return
 
-            testable_scenarios = testing_suite.get_tests()
+        testable_scenarios = testing_suite.get_tests()
 
-            with open(test_scenario_path, "r") as f:
-                for scenario in (line.strip() for line in f):
-                    trimmed_scenario = scenario[:46]
-                    print(f"* {trimmed_scenario} {'-' * (50 - len(trimmed_scenario))} ",
-                          end="",
-                          flush=True)
+        with open(test_scenario_path, "r") as f:
+            for scenario in (line.strip() for line in f):
+                trimmed_scenario = scenario[:46]
+                print(f"* {trimmed_scenario} {'-' * (50 - len(trimmed_scenario))} ",
+                      end="",
+                      flush=True)
 
-                    if scenario not in testable_scenarios:
-                        print(f"DOES NOT EXIST!!!")
-                        return
+                if scenario not in testable_scenarios:
+                    print(f"DOES NOT EXIST!!!")
+                    return
 
-                    print("Run...", end="", flush=True)
-                    if not testable_scenarios[scenario]():
-                        print("FAIL!")
-                        return
+                print("Run...", end="", flush=True)
+                if not testable_scenarios[scenario]():
+                    print("FAIL!")
+                    return
 
-                    print("Pass")
-        finally:
-            print("###########################  Runner End  ###########################")
+                print("Pass")
 
     @classmethod
     def _command_factory(cls,
