@@ -163,6 +163,7 @@ tc_loop_write_and_read_compare
 tc_single_random_lba_val_write_compare
 tc_fail
 tc_write_10_times_and_compare
+tc_invalid_lba_val_write
 tc_app_2
 ====================================================================
 # Test 수행
